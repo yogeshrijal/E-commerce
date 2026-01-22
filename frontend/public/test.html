@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>Backend API Test</h1>
+    
+    <h2>Test 1: Get Products</h2>
+    <button onclick="testProducts()">Test Products API</button>
+    <pre id="products-result"></pre>
+    
+    <h2>Test 2: Login</h2>
+    <input type="text" id="username" placeholder="Username" value="sita">
+    <input type="password" id="password" placeholder="Password">
+    <button onclick="testLogin()">Test Login</button>
+    <pre id="login-result"></pre>
+    
+    <h2>Test 3: Register New User</h2>
+    <input type="text" id="new-username" placeholder="Username" value="testuser">
+    <input type="password" id="new-password" placeholder="Password" value="test123">
+    <input type="email" id="new-email" placeholder="Email" value="test@test.com">
+    <select id="new-role">
+        <option value="customer">Customer</option>
+        <option value="seller">Seller</option>
+    </select>
+    <button onclick="testRegister()">Test Register</button>
+    <pre id="register-result"></pre>
+    
+    <script>
+        async function testProducts() {
+            try {
+                const response = await fetch('/api/product/');
+                const data = await response.json();
+                document.getElementById('products-result').textContent = 
+                    'Success! Found ' + data.length + ' products\n' + JSON.stringify(data.slice(0, 2), null, 2);
+            } catch (error) {
+                document.getElementById('products-result').textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch('/api/gettoken/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('login-result').textContent = 
+                        'Success! Logged in\n' + JSON.stringify(data, null, 2);
+                } else {
+                    document.getElementById('login-result').textContent = 
+                        'Failed: ' + response.status + '\n' + JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                document.getElementById('login-result').textContent = 'Error: ' + error.message;
+            }
+        }
+        
+        async function testRegister() {
+            const username = document.getElementById('new-username').value;
+            const password = document.getElementById('new-password').value;
+            const email = document.getElementById('new-email').value;
+            const role = document.getElementById('new-role').value;
+            
+            try {
+                const response = await fetch('/api/user/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ username, password, email, role, contact: '' })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('register-result').textContent = 
+                        'Success! User created\n' + JSON.stringify(data, null, 2);
+                } else {
+                    document.getElementById('register-result').textContent = 
+                        'Failed: ' + response.status + '\n' + JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                document.getElementById('register-result').textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
