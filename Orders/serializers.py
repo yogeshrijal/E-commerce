@@ -17,7 +17,7 @@ class OrderSerializer(ModelSerializer):
         fields=['id',  'full_name', 'email', 'contact', 'address', 
             'city', 'postal_code', 'total_amount', 'tax', 
             'shipping_cost', 'status', 'order_item', 'created_at','transaction_id','updated_at']
-        read_only_fields=['status','transaction_id','created_at','updated_at','shipping_cost','tax','total_amount']
+        read_only_fields=['transaction_id','created_at','updated_at','shipping_cost','tax','total_amount']
     def validate_order_item(self,value):
         if not value:
             raise serializers.ValidationError('atleast one item should be present')
