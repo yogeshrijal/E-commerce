@@ -38,41 +38,5 @@ CORS: django-cors-headers
 Database
 Development: SQLite
 Production Ready: Compatible with PostgreSQL/MySQL
-📦 Installation & Setup
-Prerequisites
-Python 3.10+
-Node.js 18+
-Backend Setup
-Clone the repository:
-bash
-git clone https://github.com/yourusername/your-repo.git
-cd your-repo
-Create and activate a virtual environment:
-bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-Install dependencies:
-bash
-pip install django djangorestframework djangorestframework-simplejwt django-cors-headers pillow
-# Or if requirements.txt exists: pip install -r requirements.txt
-Apply migrations:
-bash
-python manage.py migrate
-Run the development server:
-bash
-python manage.py runserver
-Frontend Setup
-Navigate to the frontend directory:
-bash
-cd frontend
-Install dependencies:
-bash
-npm install
-Start the development server:
-bash
-npm run dev
-🤝 Contributing
-Contributions are welcome! Please fork the repository and submit a pull request.
 
-📄 License
-MIT License
+\
