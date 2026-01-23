@@ -581,7 +581,13 @@ p {
   gap: 2rem;
 }
 
-.filters-sidebar {
+.products-layout-horizontal {
+  display: block;
+  width: 100%;
+}
+
+/* Filters sidebar styles moved to ProductFilters.css */
+/* .filters-sidebar {
   background-color: var(--bg-primary);
   padding: 1.5rem;
   border-radius: var(--border-radius-lg);
@@ -589,7 +595,8 @@ p {
   height: fit-content;
   position: sticky;
   top: 100px;
-}
+} */
+
 
 .filter-section {
   margin-bottom: 2rem;
@@ -1782,9 +1789,11 @@ tr:last-child td {
     grid-template-columns: 1fr;
   }
 
-  .filters-sidebar {
+  /* Handled in ProductFilters.css */
+  /* .filters-sidebar {
     position: static;
-  }
+  } */
+
 
   .cart-layout,
   .checkout-layout,

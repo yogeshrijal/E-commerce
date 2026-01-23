@@ -98,6 +98,33 @@ const OrderDetail = () => {
                                 ))}
                             </div>
                         </div>
+
+                        {/* Cancel Order Button */}
+                        {['pending', 'processing'].includes(order.status) && (
+                            <div className="order-actions">
+                                <button
+                                    className="btn btn-danger"
+                                    onClick={async () => {
+                                        if (window.confirm('Are you sure you want to cancel this order?')) {
+                                            try {
+                                                setLoading(true);
+                                                await orderAPI.updateOrder(order.id, { status: 'canceled' });
+                                                // Refresh order details
+                                                fetchOrder();
+                                            } catch (err) {
+                                                console.error(err);
+                                                // Error is handled by global toast or we can add specific handling here
+                                                alert('Failed to cancel order');
+                                            } finally {
+                                                setLoading(false);
+                                            }
+                                        }
+                                    }}
+                                >
+                                    Cancel Order
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     <div className="order-sidebar">

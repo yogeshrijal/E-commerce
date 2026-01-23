@@ -78,6 +78,12 @@ const SellerDashboard = () => {
                             <h3>Manage Products</h3>
                             <p>View and edit your products</p>
                         </Link>
+
+                        <Link to="/seller/orders" className="action-card">
+                            <span className="action-icon">📦</span>
+                            <h3>Manage Orders</h3>
+                            <p>View and process orders</p>
+                        </Link>
                     </div>
                 </div>
 

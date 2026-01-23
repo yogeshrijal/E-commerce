@@ -27,6 +27,7 @@ import OrderDetail from './pages/orders/OrderDetail';
 import SellerDashboard from './pages/seller/SellerDashboard';
 import MyProducts from './pages/seller/MyProducts';
 import ProductForm from './pages/seller/ProductForm';
+import SellerOrders from './pages/seller/SellerOrders';
 
 import AdminDashboard from './pages/admin/AdminDashboard';
 import CategoryManagement from './pages/admin/CategoryManagement';
@@ -125,6 +126,14 @@ function App() {
                     element={
                       <ProtectedRoute requiredRole="seller">
                         <ProductForm />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/seller/orders"
+                    element={
+                      <ProtectedRoute requiredRole="seller">
+                        <SellerOrders />
                       </ProtectedRoute>
                     }
                   />

@@ -4,6 +4,8 @@ import ProductCard from '../../components/products/ProductCard';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorMessage from '../../components/common/ErrorMessage';
 
+import './ProductFilters.css';
+
 const ProductList = () => {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -35,10 +37,16 @@ const ProductList = () => {
     };
 
     const filteredProducts = products.filter((product) => {
-        const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            product.description.toLowerCase().includes(searchTerm.toLowerCase());
+        const searchLower = searchTerm.toLowerCase();
 
-        // Match by category or parent_category
+        // Search in product name, description, category, and parent_category
+        const matchesSearch = !searchTerm ||
+            product.name.toLowerCase().includes(searchLower) ||
+            product.description.toLowerCase().includes(searchLower) ||
+            (product.category && product.category.toLowerCase().includes(searchLower)) ||
+            (product.parent_category && product.parent_category.toLowerCase().includes(searchLower));
+
+        // Match by category or parent_category (from dropdown)
         const matchesCategory = !selectedCategory ||
             product.category === selectedCategory ||
             product.parent_category === selectedCategory;
@@ -57,8 +65,8 @@ const ProductList = () => {
                     <p>Discover amazing products from our sellers</p>
                 </div>
 
-                <div className="products-layout">
-                    <aside className="filters-sidebar">
+                <div className="filters-sidebar">
+                    <div className="filters-container">
                         <div className="filter-section">
                             <h3>Search</h3>
                             <input
@@ -71,40 +79,33 @@ const ProductList = () => {
                         </div>
 
                         <div className="filter-section">
-                            <h3>Categories</h3>
-                            <div className="category-filters">
-                                <button
-                                    className={`category-btn ${!selectedCategory ? 'active' : ''}`}
-                                    onClick={() => setSelectedCategory('')}
-                                >
-                                    All Categories
-                                </button>
+                            <h3>Category</h3>
+                            <select
+                                value={selectedCategory}
+                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                className="category-dropdown"
+                            >
+                                <option value="">All Categories</option>
                                 {categories
                                     .filter(cat => !cat.parent)
                                     .map((category) => (
-                                        <div key={category.id}>
-                                            <button
-                                                className={`category-btn ${selectedCategory === category.name ? 'active' : ''}`}
-                                                onClick={() => setSelectedCategory(category.name)}
-                                            >
-                                                {category.name}
-                                            </button>
+                                        <optgroup key={category.id} label={category.name}>
+                                            <option value={category.name}>{category.name}</option>
                                             {categories
                                                 .filter(subCat => subCat.parent === category.name)
                                                 .map((subCategory) => (
-                                                    <button
-                                                        key={subCategory.id}
-                                                        className={`category-btn subcategory ${selectedCategory === subCategory.name ? 'active' : ''}`}
-                                                        onClick={() => setSelectedCategory(subCategory.name)}
-                                                    >
-                                                        ↳ {subCategory.name}
-                                                    </button>
+                                                    <option key={subCategory.id} value={subCategory.name}>
+                                                        &nbsp;&nbsp;↳ {subCategory.name}
+                                                    </option>
                                                 ))}
-                                        </div>
+                                        </optgroup>
                                     ))}
-                            </div>
+                            </select>
                         </div>
-                    </aside>
+                    </div>
+                </div>
+
+                <div className="products-layout-horizontal">
 
                     <div className="products-content">
                         <div className="products-header">
