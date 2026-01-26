@@ -6,6 +6,8 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import AllowAny , IsAdminUser,IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from Products.permission import IsSeller,IsSellerorAdmin
+from rest_framework import filters
+from rest_framework.filters import OrderingFilter
 
 
 # Create your views here.
@@ -28,6 +30,12 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class ProductViewSet(viewsets.ModelViewSet):
     serializer_class=ProductSerializer
     authentication_classes=[JWTAuthentication]
+    filter_backends=[OrderingFilter]
+    ordering_fields=['base_price','created_at','stock','name']
+    search_fields=['category','description','category__name']
+    ordering=['-name']
+
+
     def get_queryset(self):
         user=self.request.user
         if user.is_authenticated and user.role=='admin':
