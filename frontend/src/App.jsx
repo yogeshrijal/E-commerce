@@ -34,6 +34,7 @@ import CategoryManagement from './pages/admin/CategoryManagement';
 import UserManagement from './pages/admin/UserManagement';
 import AllProducts from './pages/admin/AllProducts';
 import OrderManagement from './pages/admin/OrderManagement';
+import ShippingManagement from './pages/admin/ShippingManagement';
 
 function App() {
   return (
@@ -176,6 +177,14 @@ function App() {
                     element={
                       <ProtectedRoute requiredRole="admin">
                         <OrderManagement />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/shipping"
+                    element={
+                      <ProtectedRoute requiredRole="admin">
+                        <ShippingManagement />
                       </ProtectedRoute>
                     }
                   />

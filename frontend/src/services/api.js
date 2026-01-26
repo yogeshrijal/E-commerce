@@ -128,31 +128,39 @@ export const productAPI = {
             headers: { 'Content-Type': 'multipart/form-data' },
         });
     },
-    updateProduct: (id, data) => {
-        // If there's a new image file, use FormData
+    updateProduct: async (id, data) => {
+        // If there's a new image file, split into two requests
         if (data.image && data.image instanceof File) {
-            const formData = new FormData();
-            formData.append('name', data.name);
-            formData.append('description', data.description);
-            formData.append('category', data.category);
-            formData.append('base_price', data.base_price);
-            formData.append('stock', data.stock);
-            formData.append('image', data.image);
+            // 1. Upload image
+            const imageFormData = new FormData();
+            imageFormData.append('image', data.image);
+
+            await api.patch(`/product/${id}/`, imageFormData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+
+            // 2. Update other data as JSON
+            const jsonData = {
+                name: data.name,
+                description: data.description,
+                category: data.category,
+                base_price: data.base_price,
+                stock: data.stock,
+            };
 
             if (data.is_active !== undefined) {
-                formData.append('is_active', data.is_active);
+                jsonData.is_active = data.is_active;
             }
 
-            // Send specs and SKUs as JSON strings when using FormData
             if (data.specs && data.specs.length > 0) {
-                formData.append('specs', JSON.stringify(data.specs));
+                jsonData.specs = data.specs;
             }
             if (data.skus && data.skus.length > 0) {
-                formData.append('skus', JSON.stringify(data.skus));
+                jsonData.skus = data.skus;
             }
 
-            return api.patch(`/product/${id}/`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
+            return api.patch(`/product/${id}/`, jsonData, {
+                headers: { 'Content-Type': 'application/json' },
             });
         }
 
@@ -191,6 +199,18 @@ export const orderAPI = {
     createOrder: (data) => api.post('/order/', data),
     updateOrder: (id, data) => api.patch(`/order/${id}/`, data),
     deleteOrder: (id) => api.delete(`/order/${id}/`),
+};
+
+// Shipping API
+export const shippingAPI = {
+    getShippingZones: () => api.get('/shippingzone/'),
+    getShippingZone: (id) => api.get(`/shippingzone/${id}/`),
+    createShippingZone: (data) => api.post('/shippingzone/', data),
+    updateShippingZone: (id, data) => api.patch(`/shippingzone/${id}/`, data),
+    deleteShippingZone: (id) => api.delete(`/shippingzone/${id}/`),
+
+    getGlobalShippingRates: () => api.get('/globalshippingrate/'),
+    updateGlobalShippingRate: (id, data) => api.patch(`/globalshippingrate/${id}/`, data),
 };
 
 export default api;

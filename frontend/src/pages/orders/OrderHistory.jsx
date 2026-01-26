@@ -1,23 +1,28 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { orderAPI } from '../../services/api';
+import { orderAPI, productAPI } from '../../services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorMessage from '../../components/common/ErrorMessage';
 
 const OrderHistory = () => {
     const [orders, setOrders] = useState([]);
+    const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        fetchOrders();
+        fetchData();
     }, []);
 
-    const fetchOrders = async () => {
+    const fetchData = async () => {
         try {
             setLoading(true);
-            const response = await orderAPI.getOrders();
-            setOrders(response.data);
+            const [ordersRes, productsRes] = await Promise.all([
+                orderAPI.getOrders(),
+                productAPI.getProducts()
+            ]);
+            setOrders(ordersRes.data);
+            setProducts(productsRes.data);
             setError(null);
         } catch (err) {
             setError('Failed to load orders');
@@ -25,6 +30,25 @@ const OrderHistory = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const getProductNames = (orderItems) => {
+        if (!orderItems || orderItems.length === 0) return '';
+
+        const names = orderItems.map(item => {
+            // Find product that has this SKU
+            for (const product of products) {
+                const foundSku = product.skus.find(s => s.id === item.sku || s.sku_code === item.sku);
+                if (foundSku) {
+                    return product.name;
+                }
+            }
+            return 'Unknown Product';
+        });
+
+        // Unique names only
+        const uniqueNames = [...new Set(names)];
+        return uniqueNames.join(', ');
     };
 
     const getStatusClass = (status) => {
@@ -39,7 +63,7 @@ const OrderHistory = () => {
     };
 
     if (loading) return <LoadingSpinner />;
-    if (error) return <ErrorMessage message={error} onRetry={fetchOrders} />;
+    if (error) return <ErrorMessage message={error} onRetry={fetchData} />;
 
     return (
         <div className="orders-page">
@@ -80,9 +104,14 @@ const OrderHistory = () => {
 
                                 <div className="order-items-preview">
                                     {order.order_item && order.order_item.length > 0 && (
-                                        <p className="items-count">
-                                            {order.order_item.length} {order.order_item.length === 1 ? 'item' : 'items'}
-                                        </p>
+                                        <>
+                                            <p className="items-count">
+                                                {order.order_item.length} {order.order_item.length === 1 ? 'item' : 'items'}
+                                            </p>
+                                            <p className="items-summary">
+                                                {getProductNames(order.order_item)}
+                                            </p>
+                                        </>
                                     )}
                                 </div>
                             </Link>

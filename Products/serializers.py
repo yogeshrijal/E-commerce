@@ -2,6 +2,8 @@
 from rest_framework.serializers import ModelSerializer
 from Products.models import Category,Product,ProductSpecs,ProductSKU,SKUAtrribute
 from rest_framework import serializers
+from django.db import transaction
+
 
 
 
@@ -31,7 +33,7 @@ class ProductSKUSerializer(ModelSerializer):
     sku_attribute=SKUAttributeSerializer(many=True,required=False)
     class Meta:
         model=ProductSKU
-        fields=['id', 'sku_code', 'price', 'stock' ,'image','sku_attribute']
+        fields=['id','sku_code', 'price', 'stock' ,'image','sku_attribute']
      
 class ProductSerializer(ModelSerializer):
     category=serializers.SlugRelatedField(
@@ -65,39 +67,50 @@ class ProductSerializer(ModelSerializer):
     def update(self, instance, validated_data):
         specs_data = validated_data.pop('specs', None)
         skus_data = validated_data.pop('skus', None)
-        
+       
+
+        instance = super().update(instance, validated_data)
       
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-        
+
+
         
         if specs_data is not None:
-       
             instance.specs.all().delete()
             for spec in specs_data:
                 ProductSpecs.objects.create(product=instance, **spec)
-        
+
+    
         if skus_data is not None:
-          
-            instance.skus.all().delete()
+            incoming_ids = []
+
             for sku_item in skus_data:
                 attrs_data = sku_item.pop('sku_attribute', [])
-                sku_obj = ProductSKU.objects.create(product=instance, **sku_item)
+                sku_id = sku_item.pop('id', None)
+
+                if sku_id:
+                    
+                    sku_obj = ProductSKU.objects.get(id=sku_id, product=instance)
+                    for key, value in sku_item.items():
+                        setattr(sku_obj, key, value)
+                    sku_obj.save()
+                else:
+                  
+                    sku_obj = ProductSKU.objects.create(
+                        product=instance,
+                        **sku_item
+                    )
+
+                incoming_ids.append(sku_obj.id)
+
                 
+                sku_obj.sku_attribute.all().delete()
                 for attr in attrs_data:
                     SKUAtrribute.objects.create(sku=sku_obj, **attr)
-        
+
+            
+            instance.skus.exclude(id__in=incoming_ids).delete()
+
         return instance
 
-
-
-
-
-    def validate_base_price(self, value):
-        if value<=0:
-            raise serializers.ValidationError("the price must be inserted")
-        return value
-    
 
     

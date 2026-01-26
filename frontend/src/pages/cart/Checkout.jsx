@@ -17,13 +17,38 @@ const Checkout = () => {
         address: user?.address || '',
         city: '',
         postal_code: '',
+        country: 'Nepal', // Default country
     });
+    const [shippingCost, setShippingCost] = useState(0);
+
+    // Update shipping cost when country changes
+    // Note: This logic mimics backend behavior for immediate UI feedback
+    const calculateShippingCost = (country) => {
+        const normalizedCountry = country.trim().toLowerCase();
+        // Assuming backend settings: National (Nepal) = 0, International = 100 (example)
+        // You might want to fetch these constants from an API if possible, 
+        // but for now we'll hardcode to match typical backend defaults or set to 0 if unknown.
+        // Since backend defaults are 0.00 in models, we'll stick to 0 for now unless specified.
+        // If you know the specific values, update them here.
+        // Based on serializers.py: 
+        // if input_country == home_country (settings.SHIPPING_HOME_COUNTRY) -> settings.SHIPPING_COST_NATIONAL
+        // else -> settings.SHIPPING_COST_INTERNATIONAL
+
+        // For this implementation, we'll keep it simple as the backend recalculates it anyway.
+        // We mainly need to send the country field.
+        return 0;
+    };
 
     const handleChange = (e) => {
+        const { name, value } = e.target;
         setFormData({
             ...formData,
-            [e.target.name]: e.target.value,
+            [name]: value,
         });
+
+        if (name === 'country') {
+            setShippingCost(calculateShippingCost(value));
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -34,9 +59,9 @@ const Checkout = () => {
             // Prepare order data
             const orderData = {
                 ...formData,
-                total_amount: getGrandTotal(),
+                total_amount: getGrandTotal() + shippingCost, // Include shipping in total if needed, but backend recalculates
                 tax: getTax(),
-                shipping_cost: 0,
+                shipping_cost: shippingCost,
                 order_item: cartItems.map((item) => ({
                     sku: item.sku.id || item.sku.sku_code, // Send SKU ID if available
                     quantity_at_purchase: item.quantity,
@@ -154,6 +179,26 @@ const Checkout = () => {
                                 </div>
                             </div>
 
+                            <div className="form-group">
+                                <label htmlFor="country">Country *</label>
+                                <select
+                                    id="country"
+                                    name="country"
+                                    value={formData.country}
+                                    onChange={handleChange}
+                                    required
+                                    className="form-control"
+                                >
+                                    <option value="Nepal">Nepal</option>
+                                    <option value="India">India</option>
+                                    <option value="China">China</option>
+                                    <option value="USA">USA</option>
+                                    <option value="UK">UK</option>
+                                    <option value="Australia">Australia</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+
                             <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
                                 {loading ? 'Placing Order...' : 'Place Order'}
                             </button>
@@ -190,12 +235,12 @@ const Checkout = () => {
 
                             <div className="summary-row">
                                 <span>Shipping:</span>
-                                <span>Free</span>
+                                <span>{shippingCost === 0 ? 'Free' : `$${shippingCost.toFixed(2)}`}</span>
                             </div>
 
                             <div className="summary-row total">
                                 <span>Total:</span>
-                                <span>${getGrandTotal().toFixed(2)}</span>
+                                <span>${(getGrandTotal() + shippingCost).toFixed(2)}</span>
                             </div>
                         </div>
                     </div>

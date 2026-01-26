@@ -104,6 +104,12 @@ const AdminDashboard = () => {
                             <h3>Manage Orders</h3>
                             <p>Process and track orders</p>
                         </Link>
+
+                        <Link to="/admin/shipping" className="action-card">
+                            <span className="action-icon">🚚</span>
+                            <h3>Manage Shipping</h3>
+                            <p>Configure shipping zones and rates</p>
+                        </Link>
                     </div>
                 </div>
 

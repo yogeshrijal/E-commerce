@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { productAPI, categoryAPI } from '../../services/api';
 import { toast } from 'react-toastify';
@@ -24,6 +24,9 @@ const ProductForm = () => {
     const [skus, setSkus] = useState([
         { sku_code: '', price: '', stock: '', image: null, sku_attribute: [{ attribute: '', value: '' }] },
     ]);
+    
+    // Store original SKU data to detect actual changes
+    const originalSkus = useRef(null);
 
     useEffect(() => {
         fetchCategories();
@@ -62,11 +65,20 @@ const ProductForm = () => {
             }
 
             if (product.skus && product.skus.length > 0) {
-                setSkus(product.skus.map(sku => ({
+                const loadedSkus = product.skus.map(sku => ({
+                    id: sku.id, // Preserve the ID for updates
                     ...sku,
+                    existingImage: sku.image,
                     image: null,
-                    sku_attribute: sku.sku_attribute || [{ attribute: '', value: '' }],
-                })));
+                    sku_attribute: (sku.sku_attribute || []).map(attr => ({
+                        id: attr.id, // Preserve attribute IDs too
+                        ...attr
+                    })),
+                }));
+                setSkus(loadedSkus);
+                
+                // Store deep copy of original SKU data for comparison
+                originalSkus.current = JSON.parse(JSON.stringify(loadedSkus));
             }
         } catch (error) {
             console.error('Error fetching product:', error);
@@ -74,6 +86,49 @@ const ProductForm = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    // Helper function to check if SKUs have actually changed
+    const haveSkusChanged = () => {
+        if (!originalSkus.current) return true; // New product
+        
+        // Check if SKU count changed
+        if (skus.length !== originalSkus.current.length) {
+            return true;
+        }
+
+        // Check each SKU for changes
+        for (let i = 0; i < skus.length; i++) {
+            const current = skus[i];
+            const original = originalSkus.current[i];
+
+            // Check basic fields
+            if (
+                current.sku_code !== original.sku_code ||
+                String(current.price) !== String(original.price) ||
+                String(current.stock) !== String(original.stock) ||
+                current.image !== null // New image uploaded
+            ) {
+                return true;
+            }
+
+            // Check attributes count
+            if (current.sku_attribute.length !== original.sku_attribute.length) {
+                return true;
+            }
+
+            // Check each attribute
+            for (let j = 0; j < current.sku_attribute.length; j++) {
+                if (
+                    current.sku_attribute[j].attribute !== original.sku_attribute[j].attribute ||
+                    current.sku_attribute[j].value !== original.sku_attribute[j].value
+                ) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     };
 
     const handleChange = (e) => {
@@ -155,19 +210,34 @@ const ProductForm = () => {
                 category: formData.parent_category || formData.category,
                 base_price: parseFloat(formData.base_price),
                 stock: parseInt(formData.stock),
-                image: formData.image, // Include the image file
+                image: formData.image,
                 specs: specs.filter((s) => s.attribute && s.value),
-                skus: skus
+            };
+
+            // Check if SKUs actually changed before including them
+            const skusChanged = haveSkusChanged();
+            
+            if (skusChanged) {
+                productData.skus = skus
                     .filter((sku) => sku.sku_code && sku.price && sku.stock)
                     .map((sku) => ({
+                        id: sku.id || undefined, // Include ID for existing SKUs
                         sku_code: sku.sku_code,
                         price: parseFloat(sku.price),
                         stock: parseInt(sku.stock),
-                        sku_attribute: sku.sku_attribute.filter((attr) => attr.attribute && attr.value),
-                    })),
-            };
+                        image: sku.image || undefined,
+                        sku_attribute: sku.sku_attribute
+                            .filter((attr) => attr.attribute && attr.value)
+                            .map((attr) => ({
+                                id: attr.id || undefined, // Include ID for existing attributes
+                                attribute: attr.attribute,
+                                value: attr.value,
+                            })),
+                    }));
+            }
 
-            console.log('Sending product data:', productData); // Debug log
+            console.log('Sending product data:', productData);
+            console.log('SKUs changed:', skusChanged);
 
             if (isEdit) {
                 await productAPI.updateProduct(id, productData);
@@ -180,11 +250,12 @@ const ProductForm = () => {
             navigate('/seller/products');
         } catch (error) {
             console.error('Submit error:', error);
-            console.error('Error response:', error.response?.data); // Debug log
+            console.error('Error response:', error.response?.data);
             const errorMsg = error.response?.data?.detail ||
                 error.response?.data?.category?.[0] ||
                 error.response?.data?.base_price?.[0] ||
                 error.response?.data?.image?.[0] ||
+                error.response?.data?.skus?.[0]?.sku_code?.[0] ||
                 'Failed to save product';
             toast.error(errorMsg);
         } finally {
@@ -377,8 +448,6 @@ const ProductForm = () => {
                                             placeholder="0.00"
                                             value={sku.price}
                                             onChange={(e) => handleSKUChange(skuIndex, 'price', e.target.value)}
-                                            step="0.01"
-                                            min="0"
                                         />
                                     </div>
 
@@ -389,13 +458,18 @@ const ProductForm = () => {
                                             placeholder="0"
                                             value={sku.stock}
                                             onChange={(e) => handleSKUChange(skuIndex, 'stock', e.target.value)}
-                                            min="0"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="form-group">
                                     <label>SKU Image</label>
+                                    {sku.existingImage && !sku.image && (
+                                        <div className="existing-image-info">
+                                            <img src={sku.existingImage} alt="Current SKU" style={{ maxWidth: '100px', maxHeight: '100px', objectFit: 'cover', marginBottom: '0.5rem' }} />
+                                            <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Current image (upload new to replace)</p>
+                                        </div>
+                                    )}
                                     <input
                                         type="file"
                                         onChange={(e) => handleSKUChange(skuIndex, 'image', e.target.files[0])}

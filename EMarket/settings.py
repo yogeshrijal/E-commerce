@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'Users',
     'Products',
     'Orders',
+    'shipping'
 
     
 ]
@@ -137,3 +138,4 @@ import os
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+

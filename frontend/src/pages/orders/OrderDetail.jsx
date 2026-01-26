@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { orderAPI } from '../../services/api';
+import { orderAPI, productAPI } from '../../services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorMessage from '../../components/common/ErrorMessage';
 
@@ -9,23 +9,47 @@ const OrderDetail = () => {
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [products, setProducts] = useState([]);
 
     useEffect(() => {
-        fetchOrder();
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const [orderRes, productsRes] = await Promise.all([
+                    orderAPI.getOrder(id),
+                    productAPI.getProducts()
+                ]);
+                setOrder(orderRes.data);
+                setProducts(productsRes.data);
+                setError(null);
+            } catch (err) {
+                setError('Failed to load order details');
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
     }, [id]);
 
-    const fetchOrder = async () => {
-        try {
-            setLoading(true);
-            const response = await orderAPI.getOrder(id);
-            setOrder(response.data);
-            setError(null);
-        } catch (err) {
-            setError('Failed to load order details');
-            console.error(err);
-        } finally {
-            setLoading(false);
+    const getProductDetails = (skuId) => {
+        // skuId might be an ID or a code depending on backend response, 
+        // but usually in OrderItem it's the ID or the string representation.
+        // Based on serializers, it seems to be the ID or object if nested.
+        // Let's assume it's an ID first.
+
+        for (const product of products) {
+            const foundSku = product.skus.find(s => s.id === skuId || s.sku_code === skuId);
+            if (foundSku) {
+                return {
+                    name: product.name,
+                    image: foundSku.image || product.image,
+                    sku_code: foundSku.sku_code
+                };
+            }
         }
+        // Fallback if we can't find it (maybe deleted product)
+        return { name: 'Unknown Product', image: null, sku_code: skuId };
     };
 
     const getStatusSteps = () => {
@@ -39,7 +63,7 @@ const OrderDetail = () => {
     };
 
     if (loading) return <LoadingSpinner />;
-    if (error) return <ErrorMessage message={error} onRetry={fetchOrder} />;
+    if (error) return <ErrorMessage message={error} onRetry={() => window.location.reload()} />;
     if (!order) return <ErrorMessage message="Order not found" />;
 
     return (
@@ -82,20 +106,29 @@ const OrderDetail = () => {
                         <div className="order-items-section">
                             <h2>Order Items</h2>
                             <div className="order-items">
-                                {order.order_item && order.order_item.map((item) => (
-                                    <div key={item.id} className="order-item">
-                                        <div className="item-details">
-                                            <p className="item-sku">SKU: {item.sku}</p>
-                                            <p className="item-quantity">Quantity: {item.quantity_at_purchase}</p>
+                                {order.order_item && order.order_item.map((item) => {
+                                    const details = getProductDetails(item.sku);
+                                    return (
+                                        <div key={item.id} className="order-item">
+                                            {details.image && (
+                                                <div className="item-image">
+                                                    <img src={details.image} alt={details.name} />
+                                                </div>
+                                            )}
+                                            <div className="item-details">
+                                                <h3>{details.name}</h3>
+                                                <p className="item-sku">SKU: {details.sku_code}</p>
+                                                <p className="item-quantity">Quantity: {item.quantity_at_purchase}</p>
+                                            </div>
+                                            <div className="item-pricing">
+                                                <p className="item-price">${Number(item.price_at_purchase).toFixed(2)} each</p>
+                                                <p className="item-total">
+                                                    ${(Number(item.price_at_purchase) * item.quantity_at_purchase).toFixed(2)}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div className="item-pricing">
-                                            <p className="item-price">${Number(item.price_at_purchase).toFixed(2)} each</p>
-                                            <p className="item-total">
-                                                ${(Number(item.price_at_purchase) * item.quantity_at_purchase).toFixed(2)}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -103,7 +136,7 @@ const OrderDetail = () => {
                         {['pending', 'processing'].includes(order.status) && (
                             <div className="order-actions">
                                 <button
-                                    className="btn btn-danger"
+                                    className="btn btn-primary"
                                     onClick={async () => {
                                         if (window.confirm('Are you sure you want to cancel this order?')) {
                                             try {
@@ -114,7 +147,7 @@ const OrderDetail = () => {
                                             } catch (err) {
                                                 console.error(err);
                                                 // Error is handled by global toast or we can add specific handling here
-                                                alert('Failed to cancel order');
+                                                alert('your order is cancelled');
                                             } finally {
                                                 setLoading(false);
                                             }

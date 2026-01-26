@@ -1,29 +1,56 @@
 import { useState, useEffect } from 'react';
-import { orderAPI } from '../../services/api';
+import { orderAPI, productAPI } from '../../services/api';
 import { toast } from 'react-toastify';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 
 const OrderManagement = () => {
     const [orders, setOrders] = useState([]);
+    const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState('');
     const [expandedOrder, setExpandedOrder] = useState(null);
 
     useEffect(() => {
-        fetchOrders();
+        fetchData();
     }, []);
 
-    const fetchOrders = async () => {
+    const fetchData = async () => {
         try {
             setLoading(true);
-            const response = await orderAPI.getOrders();
-            setOrders(response.data);
+            const [ordersRes, productsRes] = await Promise.all([
+                orderAPI.getOrders(),
+                productAPI.getProducts()
+            ]);
+            setOrders(ordersRes.data);
+            setProducts(productsRes.data);
         } catch (error) {
-            console.error('Error fetching orders:', error);
+            console.error('Error fetching data:', error);
             toast.error('Failed to load orders');
         } finally {
             setLoading(false);
         }
+    };
+
+    const fetchOrders = async () => {
+        try {
+            const response = await orderAPI.getOrders();
+            setOrders(response.data);
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+        }
+    };
+
+    const getProductDetails = (skuId) => {
+        for (const product of products) {
+            const foundSku = product.skus.find(s => s.id === skuId || s.sku_code === skuId);
+            if (foundSku) {
+                return {
+                    name: product.name,
+                    sku_code: foundSku.sku_code
+                };
+            }
+        }
+        return { name: 'Unknown Product', sku_code: skuId };
     };
 
     const handleStatusUpdate = async (orderId, newStatus) => {
@@ -96,13 +123,19 @@ const OrderManagement = () => {
 
                                         <div className="order-section">
                                             <h4>Order Items</h4>
-                                            {order.order_item && order.order_item.map((item) => (
-                                                <div key={item.id} className="order-item-row">
-                                                    <span>SKU: {item.sku}</span>
-                                                    <span>Qty: {item.quantity_at_purchase}</span>
-                                                    <span>${Number(item.price_at_purchase).toFixed(2)}</span>
-                                                </div>
-                                            ))}
+                                            {order.order_item && order.order_item.map((item) => {
+                                                const details = getProductDetails(item.sku);
+                                                return (
+                                                    <div key={item.id} className="order-item-row">
+                                                        <div className="item-info-col">
+                                                            <span className="item-name-bold">{details.name}</span>
+                                                            <span className="item-sku-small">SKU: {details.sku_code}</span>
+                                                        </div>
+                                                        <span>Qty: {item.quantity_at_purchase}</span>
+                                                        <span>${Number(item.price_at_purchase).toFixed(2)}</span>
+                                                    </div>
+                                                );
+                                            })}
                                         </div>
 
                                         <div className="order-section">
