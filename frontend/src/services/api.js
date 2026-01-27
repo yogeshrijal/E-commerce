@@ -96,7 +96,14 @@ export const categoryAPI = {
 
 // Product API
 export const productAPI = {
-    getProducts: () => api.get('/product/'),
+    getProducts: (params = {}) => {
+        const queryParams = new URLSearchParams();
+        if (params.ordering) {
+            queryParams.append('ordering', params.ordering);
+        }
+        const queryString = queryParams.toString();
+        return api.get(`/product/${queryString ? `?${queryString}` : ''}`);
+    },
     getProduct: (id) => api.get(`/product/${id}/`),
     createProduct: (data) => {
         // Use FormData for image upload support

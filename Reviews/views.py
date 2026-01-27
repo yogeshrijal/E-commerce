@@ -4,6 +4,7 @@ from Reviews.serializers import ReviewSeralizers
 from rest_framework import viewsets
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.filters import OrderingFilter
 
 # Create your views here.
 class ReviewViewset(viewsets.ModelViewSet):
@@ -11,6 +12,9 @@ class ReviewViewset(viewsets.ModelViewSet):
     serializer_class=ReviewSeralizers
     authentication_classes=[JWTAuthentication]
     permission_classes=[IsAuthenticated]
+    filter_backends=[OrderingFilter]
+    ordering_fields=['rating']
+
 
 
 

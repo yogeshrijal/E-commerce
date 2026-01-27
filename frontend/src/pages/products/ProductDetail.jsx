@@ -93,6 +93,32 @@ const ProductDetail = () => {
                     <div className="product-info-section">
                         <h1 className="product-title">{product.name}</h1>
 
+                        {/* Average Rating Display */}
+                        {product.reviews && product.reviews.length > 0 && (
+                            <div className="product-average-rating">
+                                <div className="rating-stars-large">
+                                    {(() => {
+                                        const avgRating = product.reviews.reduce((acc, r) => acc + r.rating, 0) / product.reviews.length;
+                                        const fullStars = Math.floor(avgRating);
+                                        const hasHalfStar = avgRating % 1 >= 0.5;
+                                        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+                                        return (
+                                            <>
+                                                <span className="stars">
+                                                    {'★'.repeat(fullStars)}
+                                                    {hasHalfStar && '⯨'}
+                                                    {'☆'.repeat(emptyStars)}
+                                                </span>
+                                                <span className="rating-number">{avgRating.toFixed(1)}</span>
+                                                <span className="review-count">({product.reviews.length} {product.reviews.length === 1 ? 'review' : 'reviews'})</span>
+                                            </>
+                                        );
+                                    })()}
+                                </div>
+                            </div>
+                        )}
+
                         <div className="product-meta">
                             <span className="category-tag">{product.category}</span>
                             {product.parent_category && (

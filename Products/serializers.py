@@ -36,6 +36,8 @@ class ProductSKUSerializer(ModelSerializer):
         fields=['id','sku_code', 'price', 'stock' ,'image','sku_attribute']
      
 class ProductSerializer(ModelSerializer):
+    avg_rating = serializers.FloatField(read_only=True)
+    review_count = serializers.IntegerField(read_only=True)
     category=serializers.SlugRelatedField(
         queryset=Category.objects.all(),
         slug_field='name')
@@ -47,7 +49,7 @@ class ProductSerializer(ModelSerializer):
 
     class Meta:
        model=Product
-       fields=['id','category','name','parent_category','description','stock','image','created_by','skus','specs','base_price','is_active']
+       fields=['id','category','name','parent_category','description','stock','image','created_by','skus','specs','base_price','is_active','avg_rating','review_count']
        read_only_fields=['created_by']
     
     def create (self,validated_data):

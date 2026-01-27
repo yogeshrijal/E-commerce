@@ -17,13 +17,18 @@ const ProductList = () => {
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [sortBy]); // Re-fetch when sort changes for rating-based sorts
 
     const fetchData = async () => {
         try {
             setLoading(true);
+
+            // For rating-based sorts, use backend ordering
+            const orderingParam = sortBy === 'rating-desc' ? '-avg_rating' :
+                sortBy === 'rating-asc' ? 'avg_rating' : null;
+
             const [productsRes, categoriesRes] = await Promise.all([
-                productAPI.getProducts(),
+                productAPI.getProducts(orderingParam ? { ordering: orderingParam } : {}),
                 categoryAPI.getCategories(),
             ]);
             setProducts(productsRes.data);
@@ -56,6 +61,11 @@ const ProductList = () => {
             return matchesSearch && matchesCategory;
         })
         .sort((a, b) => {
+            // Rating sorts are handled by backend, so skip client-side sorting for those
+            if (sortBy === 'rating-desc' || sortBy === 'rating-asc') {
+                return 0;
+            }
+
             switch (sortBy) {
                 case 'name-asc':
                     return a.name.localeCompare(b.name);
@@ -138,6 +148,8 @@ const ProductList = () => {
                                 <option value="name-desc">Name (Z-A)</option>
                                 <option value="price-asc">Price (Low to High)</option>
                                 <option value="price-desc">Price (High to Low)</option>
+                                <option value="rating-desc">Rating (High to Low)</option>
+                                <option value="rating-asc">Rating (Low to High)</option>
                                 <option value="stock-asc">Stock (Low to High)</option>
                                 <option value="stock-desc">Stock (High to Low)</option>
                             </select>
