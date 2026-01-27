@@ -13,6 +13,7 @@ const ProductList = () => {
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
+    const [sortBy, setSortBy] = useState('name-asc');
 
     useEffect(() => {
         fetchData();
@@ -36,23 +37,42 @@ const ProductList = () => {
         }
     };
 
-    const filteredProducts = products.filter((product) => {
-        const searchLower = searchTerm.toLowerCase();
+    const filteredProducts = products
+        .filter((product) => {
+            const searchLower = searchTerm.toLowerCase();
 
-        // Search in product name, description, category, and parent_category
-        const matchesSearch = !searchTerm ||
-            product.name.toLowerCase().includes(searchLower) ||
-            product.description.toLowerCase().includes(searchLower) ||
-            (product.category && product.category.toLowerCase().includes(searchLower)) ||
-            (product.parent_category && product.parent_category.toLowerCase().includes(searchLower));
+            // Search in product name, description, category, and parent_category
+            const matchesSearch = !searchTerm ||
+                product.name.toLowerCase().includes(searchLower) ||
+                product.description.toLowerCase().includes(searchLower) ||
+                (product.category && product.category.toLowerCase().includes(searchLower)) ||
+                (product.parent_category && product.parent_category.toLowerCase().includes(searchLower));
 
-        // Match by category or parent_category (from dropdown)
-        const matchesCategory = !selectedCategory ||
-            product.category === selectedCategory ||
-            product.parent_category === selectedCategory;
+            // Match by category or parent_category (from dropdown)
+            const matchesCategory = !selectedCategory ||
+                product.category === selectedCategory ||
+                product.parent_category === selectedCategory;
 
-        return matchesSearch && matchesCategory;
-    });
+            return matchesSearch && matchesCategory;
+        })
+        .sort((a, b) => {
+            switch (sortBy) {
+                case 'name-asc':
+                    return a.name.localeCompare(b.name);
+                case 'name-desc':
+                    return b.name.localeCompare(a.name);
+                case 'price-asc':
+                    return Number(a.base_price) - Number(b.base_price);
+                case 'price-desc':
+                    return Number(b.base_price) - Number(a.base_price);
+                case 'stock-asc':
+                    return a.stock - b.stock;
+                case 'stock-desc':
+                    return b.stock - a.stock;
+                default:
+                    return 0;
+            }
+        });
 
     if (loading) return <LoadingSpinner />;
     if (error) return <ErrorMessage message={error} onRetry={fetchData} />;
@@ -68,8 +88,9 @@ const ProductList = () => {
                 <div className="filters-sidebar">
                     <div className="filters-container">
                         <div className="filter-section">
-                            <h3>Search</h3>
+                            <label htmlFor="search-input">Search</label>
                             <input
+                                id="search-input"
                                 type="text"
                                 placeholder="Search products..."
                                 value={searchTerm}
@@ -79,8 +100,9 @@ const ProductList = () => {
                         </div>
 
                         <div className="filter-section">
-                            <h3>Category</h3>
+                            <label htmlFor="category-select">Category</label>
                             <select
+                                id="category-select"
                                 value={selectedCategory}
                                 onChange={(e) => setSelectedCategory(e.target.value)}
                                 className="category-dropdown"
@@ -100,6 +122,24 @@ const ProductList = () => {
                                                 ))}
                                         </optgroup>
                                     ))}
+                            </select>
+                        </div>
+
+                        <div className="filter-section">
+                            <label htmlFor="sort-select">Sort By</label>
+                            <select
+                                id="sort-select"
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                                className="sort-dropdown"
+                                style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #ddd' }}
+                            >
+                                <option value="name-asc">Name (A-Z)</option>
+                                <option value="name-desc">Name (Z-A)</option>
+                                <option value="price-asc">Price (Low to High)</option>
+                                <option value="price-desc">Price (High to Low)</option>
+                                <option value="stock-asc">Stock (Low to High)</option>
+                                <option value="stock-desc">Stock (High to Low)</option>
                             </select>
                         </div>
                     </div>

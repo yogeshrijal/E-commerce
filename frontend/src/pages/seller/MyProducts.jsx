@@ -4,12 +4,15 @@ import { productAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-toastify';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import './MyProducts.css';
 
 const MyProducts = () => {
     const { user } = useAuth();
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [sortBy, setSortBy] = useState('name-asc');
+    const [selectedCategory, setSelectedCategory] = useState('');
 
     useEffect(() => {
         fetchProducts();
@@ -31,6 +34,9 @@ const MyProducts = () => {
             setLoading(false);
         }
     };
+
+    // Extract unique categories from products
+    const categories = [...new Set(products.map(p => p.category))].filter(Boolean).sort();
 
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this product?')) {
@@ -72,9 +78,30 @@ const MyProducts = () => {
         }
     };
 
-    const filteredProducts = products.filter((product) =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredProducts = products
+        .filter((product) => {
+            const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesCategory = !selectedCategory || product.category === selectedCategory;
+            return matchesSearch && matchesCategory;
+        })
+        .sort((a, b) => {
+            switch (sortBy) {
+                case 'name-asc':
+                    return a.name.localeCompare(b.name);
+                case 'name-desc':
+                    return b.name.localeCompare(a.name);
+                case 'price-asc':
+                    return Number(a.base_price) - Number(b.base_price);
+                case 'price-desc':
+                    return Number(b.base_price) - Number(a.base_price);
+                case 'stock-asc':
+                    return a.stock - b.stock;
+                case 'stock-desc':
+                    return b.stock - a.stock;
+                default:
+                    return 0;
+            }
+        });
 
     if (loading) return <LoadingSpinner />;
 
@@ -88,14 +115,49 @@ const MyProducts = () => {
                     </Link>
                 </div>
 
-                <div className="products-controls">
-                    <input
-                        type="text"
-                        placeholder="Search products..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="search-input"
-                    />
+                <div className="products-controls-container">
+                    <div className="control-group">
+                        <label>Search</label>
+                        <input
+                            type="text"
+                            placeholder="Search products..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="control-input"
+                        />
+                    </div>
+
+                    <div className="control-group">
+                        <label>Category</label>
+                        <select
+                            value={selectedCategory}
+                            onChange={(e) => setSelectedCategory(e.target.value)}
+                            className="control-select"
+                        >
+                            <option value="">All Categories</option>
+                            {categories.map((category) => (
+                                <option key={category} value={category}>
+                                    {category}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="control-group">
+                        <label>Sort By</label>
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                            className="control-select"
+                        >
+                            <option value="name-asc">Name (A-Z)</option>
+                            <option value="name-desc">Name (Z-A)</option>
+                            <option value="price-asc">Price (Low to High)</option>
+                            <option value="price-desc">Price (High to Low)</option>
+                            <option value="stock-asc">Stock (Low to High)</option>
+                            <option value="stock-desc">Stock (High to Low)</option>
+                        </select>
+                    </div>
                 </div>
 
                 {filteredProducts.length === 0 ? (
