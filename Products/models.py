@@ -60,7 +60,7 @@ class SKUAtrribute(models.Model):
     attribute=models.CharField(max_length=20)
     value=models.CharField(max_length=20)
     class Meta:
-        unique_together=('attribute','value')
+        unique_together=('sku','attribute')
     
     def __str__(self):
         return f"{self.attribute}:{self.value}"

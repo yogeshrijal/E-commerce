@@ -24,13 +24,15 @@ from Users.views import UserViewSet
 from Products.views import ProductViewSet,CategoryViewSet
 from Orders.views import OrderViewSet
 from shipping.views import GlobalShippingSerializerViewset,ShippingZoneViewset
+from Reviews.views import ReviewViewset
 router=DefaultRouter()
 router.register('user',UserViewSet,basename='user')
-router.register('category',CategoryViewSet,basename="category")
+router.register('category',CategoryViewSet,basename='category')
 router.register('product',ProductViewSet,basename='product')
 router.register('order',OrderViewSet,basename='order')
 router.register('shippingzone',ShippingZoneViewset,basename='shippingzone')
 router.register('globalshippingrate',GlobalShippingSerializerViewset,basename='globalshippingrate')
+router.register('review',ReviewViewset,basename='review')
 
 
 urlpatterns = [
