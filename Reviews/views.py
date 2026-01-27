@@ -8,11 +8,11 @@ from rest_framework.permissions import IsAuthenticated
 # Create your views here.
 class ReviewViewset(viewsets.ModelViewSet):
     queryset=Review.objects.all()
-    serializer_class=[ReviewSeralizers]
+    serializer_class=ReviewSeralizers
     authentication_classes=[JWTAuthentication]
     permission_classes=[IsAuthenticated]
 
 
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)   
+        serializer.save(user=self.request.user)    

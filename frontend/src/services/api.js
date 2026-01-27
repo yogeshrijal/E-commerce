@@ -213,4 +213,12 @@ export const shippingAPI = {
     updateGlobalShippingRate: (id, data) => api.patch(`/globalshippingrate/${id}/`, data),
 };
 
+// Review API
+export const reviewAPI = {
+    getReviews: () => api.get('/review/'),
+    createReview: (data) => api.post('/review/', data),
+    updateReview: (id, data) => api.patch(`/review/${id}/`, data),
+    deleteReview: (id) => api.delete(`/review/${id}/`),
+};
+
 export default api;

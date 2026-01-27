@@ -2,16 +2,19 @@ from rest_framework.serializers import ModelSerializer
 from Reviews.models import Review
 from rest_framework import serializers
 from Orders.models import OrderItem
+from rest_framework.serializers import SerializerMethodField
+
 
 
 
 
 
 class ReviewSeralizers(ModelSerializer):
+    customer_name=SerializerMethodField()
     class Meta:
         model=Review
-        fields=['id','product','order','user', 'sku', 'rating' ,'comment', 'created_at']
-        read_only_fields=['created_at','id']
+        fields=['id','product','order','user', 'sku', 'rating' ,'comment', 'created_at','customer_name']
+        read_only_fields=['created_at','id','user', 'order',  'sku']
 
 
 
@@ -39,7 +42,7 @@ class ReviewSeralizers(ModelSerializer):
         return data
     
     def create(self, validated_data):
-        user=validated_data['user']
+        user=validated_data.pop('user')
         product=validated_data['product']
 
 
@@ -48,13 +51,18 @@ class ReviewSeralizers(ModelSerializer):
             order__customer=user,
             order__status='delivered'
         ).first()
+        if not purchased_item:
+            raise serializers.ValidationError('you have to you purchase the item to rate')
 
         return Review.objects.create(
             user=user,
             sku=purchased_item.sku,
             order=purchased_item.order,
             **validated_data
-        ) 
+        )
+    def get_customer_name(self,obj):
+        user=obj.user
+        return user.username 
 
         
         

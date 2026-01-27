@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { orderAPI, productAPI } from '../../services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorMessage from '../../components/common/ErrorMessage';
+import ReviewForm from '../../components/reviews/ReviewForm';
+import { toast } from 'react-toastify';
 
 const OrderDetail = () => {
     const { id } = useParams();
@@ -10,6 +12,10 @@ const OrderDetail = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [products, setProducts] = useState([]);
+
+    // Review Modal State
+    const [reviewModalOpen, setReviewModalOpen] = useState(false);
+    const [selectedItemForReview, setSelectedItemForReview] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -44,12 +50,13 @@ const OrderDetail = () => {
                 return {
                     name: product.name,
                     image: foundSku.image || product.image,
-                    sku_code: foundSku.sku_code
+                    sku_code: foundSku.sku_code,
+                    productId: product.id
                 };
             }
         }
         // Fallback if we can't find it (maybe deleted product)
-        return { name: 'Unknown Product', image: null, sku_code: skuId };
+        return { name: 'Unknown Product', image: null, sku_code: skuId, productId: null };
     };
 
     const getStatusSteps = () => {
@@ -60,6 +67,19 @@ const OrderDetail = () => {
             completed: index <= currentIndex,
             active: index === currentIndex,
         }));
+    };
+
+    const handleWriteReview = (item, details) => {
+        if (!details.productId) {
+            toast.error('Cannot review this product');
+            return;
+        }
+        setSelectedItemForReview({
+            productId: details.productId,
+            skuId: item.sku,
+            productName: details.name
+        });
+        setReviewModalOpen(true);
     };
 
     if (loading) return <LoadingSpinner />;
@@ -125,6 +145,15 @@ const OrderDetail = () => {
                                                 <p className="item-total">
                                                     ${(Number(item.price_at_purchase) * item.quantity_at_purchase).toFixed(2)}
                                                 </p>
+                                                {order.status === 'delivered' && (
+                                                    <button
+                                                        className="btn btn-sm btn-secondary mt-2"
+                                                        style={{ marginTop: '0.5rem' }}
+                                                        onClick={() => handleWriteReview(item, details)}
+                                                    >
+                                                        Write Review
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     );
@@ -143,7 +172,8 @@ const OrderDetail = () => {
                                                 setLoading(true);
                                                 await orderAPI.updateOrder(order.id, { status: 'canceled' });
                                                 // Refresh order details
-                                                fetchOrder();
+                                                // fetchOrder(); // This function is not defined in the original code, need to fix
+                                                window.location.reload();
                                             } catch (err) {
                                                 console.error(err);
                                                 // Error is handled by global toast or we can add specific handling here
@@ -214,6 +244,28 @@ const OrderDetail = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Review Modal */}
+            {reviewModalOpen && selectedItemForReview && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h3>Review {selectedItemForReview.productName}</h3>
+                            <button className="modal-close" onClick={() => setReviewModalOpen(false)}>×</button>
+                        </div>
+                        <ReviewForm
+                            productId={selectedItemForReview.productId}
+                            orderId={order.id}
+                            skuId={selectedItemForReview.skuId}
+                            onReviewAdded={() => {
+                                setReviewModalOpen(false);
+                                toast.success('Review submitted successfully');
+                            }}
+                            onCancel={() => setReviewModalOpen(false)}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

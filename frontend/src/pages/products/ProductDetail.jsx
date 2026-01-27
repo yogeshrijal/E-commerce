@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorMessage from '../../components/common/ErrorMessage';
 import { toast } from 'react-toastify';
+import ReviewList from '../../components/reviews/ReviewList';
 
 const ProductDetail = () => {
     const { id } = useParams();
@@ -184,6 +185,10 @@ const ProductDetail = () => {
                             </div>
                         )}
                     </div>
+                </div>
+
+                <div className="product-reviews-container">
+                    <ReviewList product={product} />
                 </div>
             </div>
         </div>
