@@ -25,6 +25,7 @@ from Products.views import ProductViewSet,CategoryViewSet
 from Orders.views import OrderViewSet
 from shipping.views import GlobalShippingSerializerViewset,ShippingZoneViewset
 from Reviews.views import ReviewViewset
+from Payments.views import PaymentViewSet
 router=DefaultRouter()
 router.register('user',UserViewSet,basename='user')
 router.register('category',CategoryViewSet,basename='category')
@@ -33,6 +34,7 @@ router.register('order',OrderViewSet,basename='order')
 router.register('shippingzone',ShippingZoneViewset,basename='shippingzone')
 router.register('globalshippingrate',GlobalShippingSerializerViewset,basename='globalshippingrate')
 router.register('review',ReviewViewset,basename='review')
+router.register('payment',PaymentViewSet,basename='payment')
 
 
 urlpatterns = [
