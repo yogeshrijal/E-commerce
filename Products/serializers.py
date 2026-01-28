@@ -30,10 +30,14 @@ class SKUAttributeSerializer(ModelSerializer):
         fields=['attribute','value']   
 
 class ProductSKUSerializer(ModelSerializer):
+    id = serializers.IntegerField(required=False)
     sku_attribute=SKUAttributeSerializer(many=True,required=False)
     class Meta:
         model=ProductSKU
         fields=['id','sku_code', 'price', 'stock' ,'image','sku_attribute']
+        extra_kwargs = {
+            'sku_code': {'validators': []}  
+        }
      
 class ProductSerializer(ModelSerializer):
     avg_rating = serializers.FloatField(read_only=True)
@@ -51,6 +55,7 @@ class ProductSerializer(ModelSerializer):
        model=Product
        fields=['id','category','name','parent_category','description','stock','image','created_by','skus','specs','base_price','is_active','avg_rating','review_count']
        read_only_fields=['created_by']
+       
     
     def create (self,validated_data):
         specs_data=validated_data.pop('specs',[])
@@ -69,12 +74,8 @@ class ProductSerializer(ModelSerializer):
     def update(self, instance, validated_data):
         specs_data = validated_data.pop('specs', None)
         skus_data = validated_data.pop('skus', None)
-       
 
         instance = super().update(instance, validated_data)
-      
-
-
         
         if specs_data is not None:
             instance.specs.all().delete()

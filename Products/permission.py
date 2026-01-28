@@ -12,7 +12,9 @@ class IsSeller(BasePermission):
 class IsSellerorAdmin(BasePermission):
     def has_object_permission(self, request, view, obj):
         user=request.user
-        if user.is_authenticated and user.role=='admin':
+        if not user.is_authenticated :
+            return False
+        if user.role=='admin':
             return True
         if user.role=='seller' and obj.created_by==user:
             return True  
