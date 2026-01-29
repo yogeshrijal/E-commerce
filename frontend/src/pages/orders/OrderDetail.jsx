@@ -209,6 +209,12 @@ const OrderDetail = () => {
                                     <span>{order.transaction_id}</span>
                                 </div>
                             )}
+                            <div className="info-row">
+                                <span>Payment Status:</span>
+                                <span className={`status-badge ${order.payment_details?.[0]?.status || 'pending'}`}>
+                                    {order.payment_details?.[0]?.status || 'Pending'}
+                                </span>
+                            </div>
                         </div>
 
                         <div className="shipping-info-card">

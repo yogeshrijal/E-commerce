@@ -38,25 +38,25 @@ class PaymentViewSet(viewsets.ModelViewSet):
         oid=data['oid']
         amt=data['amt']
         refID=data['refID']
-        url = "https://uat.esewa.com.np/epay/transrec"
+        url = "https://rc-epay.esewa.com.np/api/epay/transaction/status/"
 
 
 
-        payload={
-             'amt': amt,
-            'rid': refID,
-            'pid': oid,
-            'scd': 'EPAYTEST'
+        params={
+            'product_code': 'EPAYTEST',
+             'total_amount': amt,
+            'transaction_uuid': oid,
+            
         }
         
         
         try:
-            response=requests.post(url,data=payload)
-            root = ET.fromstring(response.content)
-            response_code = root.find('response_code').text.strip()
+            response=requests.get(url,params=params)
+            resp_data=response.json()
+            status_value=resp_data.get('status')
 
 
-            if response_code.lower()=='success':
+            if status_value=='COMPLETE':
                 payment = Payment.objects.get(order__id=oid, status='pending')
                 
                 payment.status = 'completed'

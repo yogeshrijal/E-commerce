@@ -20,6 +20,8 @@ import ProductDetail from './pages/products/ProductDetail';
 
 import Cart from './pages/cart/Cart';
 import Checkout from './pages/cart/Checkout';
+import PaymentSuccess from './pages/payment/PaymentSuccess';
+import PaymentFailure from './pages/payment/PaymentFailure';
 
 import OrderHistory from './pages/orders/OrderHistory';
 import OrderDetail from './pages/orders/OrderDetail';
@@ -93,6 +95,22 @@ function App() {
                     element={
                       <ProtectedRoute requiredRole="customer">
                         <OrderDetail />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/payment/success"
+                    element={
+                      <ProtectedRoute requiredRole="customer">
+                        <PaymentSuccess />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/payment/failure"
+                    element={
+                      <ProtectedRoute requiredRole="customer">
+                        <PaymentFailure />
                       </ProtectedRoute>
                     }
                   />

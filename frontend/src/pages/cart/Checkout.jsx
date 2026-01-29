@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
@@ -19,7 +19,20 @@ const Checkout = () => {
         postal_code: '',
         country: 'Nepal', // Default country
     });
+    const [paymentMethod, setPaymentMethod] = useState('cod'); // 'cod' or 'esewa'
     const [shippingCost, setShippingCost] = useState(0);
+
+    useEffect(() => {
+        if (user) {
+            setFormData(prev => ({
+                ...prev,
+                full_name: user.username || '',
+                email: user.email || '',
+                contact: user.contact || '',
+                address: user.address || '',
+            }));
+        }
+    }, [user]);
 
     // Update shipping cost when country changes
     // Note: This logic mimics backend behavior for immediate UI feedback
@@ -71,10 +84,45 @@ const Checkout = () => {
             console.log('Sending order data:', orderData); // Debug log
 
             const response = await orderAPI.createOrder(orderData);
+            const orderId = response.data.id;
 
-            toast.success('Order placed successfully!');
-            clearCart();
-            navigate(`/orders/${response.data.id}`);
+            if (paymentMethod === 'esewa') {
+                // Construct eSewa form data
+                const totalAmount = getGrandTotal() + shippingCost;
+                const path = "https://uat.esewa.com.np/epay/main";
+                const params = {
+                    amt: totalAmount,
+                    psc: 0,
+                    pdc: 0,
+                    txAmt: 0,
+                    tAmt: totalAmount,
+                    pid: orderId,
+                    scd: "EPAYTEST",
+                    su: `${window.location.origin}/payment/success?oid=${orderId}&amt=${totalAmount}`,
+                    fu: `${window.location.origin}/payment/failure`
+                };
+
+                // Create a hidden form and submit it
+                const form = document.createElement("form");
+                form.setAttribute("method", "POST");
+                form.setAttribute("action", path);
+
+                for (const key in params) {
+                    const hiddenField = document.createElement("input");
+                    hiddenField.setAttribute("type", "hidden");
+                    hiddenField.setAttribute("name", key);
+                    hiddenField.setAttribute("value", params[key]);
+                    form.appendChild(hiddenField);
+                }
+
+                document.body.appendChild(form);
+                form.submit();
+            } else {
+                toast.success('Order placed successfully!');
+                clearCart();
+                navigate(`/orders/${orderId}`);
+            }
+
         } catch (error) {
             console.error('Order error:', error);
             console.error('Error response:', error.response?.data);
@@ -90,9 +138,19 @@ const Checkout = () => {
         }
     };
 
-    if (cartItems.length === 0) {
-        navigate('/cart');
-        return null;
+    useEffect(() => {
+        if (cartItems.length === 0) {
+            navigate('/cart');
+        }
+    }, [cartItems, navigate]);
+
+    if (!cartItems || cartItems.length === 0) {
+        return (
+            <div className="container" style={{ padding: '50px', textAlign: 'center' }}>
+                <h2>Your cart is empty</h2>
+                <p>Redirecting to cart...</p>
+            </div>
+        );
     }
 
     return (
@@ -111,7 +169,7 @@ const Checkout = () => {
                                     type="text"
                                     id="full_name"
                                     name="full_name"
-                                    value={formData.full_name}
+                                    value={formData.full_name || ''}
                                     onChange={handleChange}
                                     required
                                 />
@@ -123,7 +181,7 @@ const Checkout = () => {
                                     type="email"
                                     id="email"
                                     name="email"
-                                    value={formData.email}
+                                    value={formData.email || ''}
                                     onChange={handleChange}
                                     required
                                 />
@@ -135,7 +193,7 @@ const Checkout = () => {
                                     type="number"
                                     id="contact"
                                     name="contact"
-                                    value={formData.contact}
+                                    value={formData.contact || ''}
                                     onChange={handleChange}
                                     required
                                 />
@@ -147,7 +205,7 @@ const Checkout = () => {
                                     type="text"
                                     id="address"
                                     name="address"
-                                    value={formData.address}
+                                    value={formData.address || ''}
                                     onChange={handleChange}
                                     required
                                 />
@@ -160,7 +218,7 @@ const Checkout = () => {
                                         type="text"
                                         id="city"
                                         name="city"
-                                        value={formData.city}
+                                        value={formData.city || ''}
                                         onChange={handleChange}
                                         required
                                     />
@@ -172,7 +230,7 @@ const Checkout = () => {
                                         type="text"
                                         id="postal_code"
                                         name="postal_code"
-                                        value={formData.postal_code}
+                                        value={formData.postal_code || ''}
                                         onChange={handleChange}
                                         required
                                     />
@@ -184,7 +242,7 @@ const Checkout = () => {
                                 <select
                                     id="country"
                                     name="country"
-                                    value={formData.country}
+                                    value={formData.country || 'Nepal'}
                                     onChange={handleChange}
                                     required
                                     className="form-control"
@@ -199,8 +257,38 @@ const Checkout = () => {
                                 </select>
                             </div>
 
+                            <div className="form-group">
+                                <label>Payment Method *</label>
+                                <div className="payment-methods">
+                                    <div className={`payment-method ${paymentMethod === 'cod' ? 'active' : ''}`}
+                                        onClick={() => setPaymentMethod('cod')}>
+                                        <input
+                                            type="radio"
+                                            id="cod"
+                                            name="paymentMethod"
+                                            value="cod"
+                                            checked={paymentMethod === 'cod'}
+                                            onChange={() => setPaymentMethod('cod')}
+                                        />
+                                        <label htmlFor="cod">Cash on Delivery</label>
+                                    </div>
+                                    <div className={`payment-method ${paymentMethod === 'esewa' ? 'active' : ''}`}
+                                        onClick={() => setPaymentMethod('esewa')}>
+                                        <input
+                                            type="radio"
+                                            id="esewa"
+                                            name="paymentMethod"
+                                            value="esewa"
+                                            checked={paymentMethod === 'esewa'}
+                                            onChange={() => setPaymentMethod('esewa')}
+                                        />
+                                        <label htmlFor="esewa">eSewa Mobile Wallet</label>
+                                    </div>
+                                </div>
+                            </div>
+
                             <button type="submit" className="btn btn-primary btn-block" disabled={loading}>
-                                {loading ? 'Placing Order...' : 'Place Order'}
+                                {loading ? 'Processing...' : (paymentMethod === 'esewa' ? 'Pay with eSewa' : 'Place Order')}
                             </button>
                         </form>
                     </div>
@@ -210,13 +298,13 @@ const Checkout = () => {
 
                         <div className="summary-items">
                             {cartItems.map((item) => (
-                                <div key={item.sku.sku_code} className="summary-item">
+                                <div key={item?.sku?.sku_code || Math.random()} className="summary-item">
                                     <div className="item-info">
-                                        <span className="item-name">{item.product.name}</span>
-                                        <span className="item-qty">x{item.quantity}</span>
+                                        <span className="item-name">{item?.product?.name || 'Unknown Product'}</span>
+                                        <span className="item-qty">x{item?.quantity || 0}</span>
                                     </div>
                                     <span className="item-price">
-                                        ${(Number(item.sku.price) * item.quantity).toFixed(2)}
+                                        ${(Number(item?.sku?.price || 0) * (item?.quantity || 0)).toFixed(2)}
                                     </span>
                                 </div>
                             ))}
@@ -225,12 +313,12 @@ const Checkout = () => {
                         <div className="summary-totals">
                             <div className="summary-row">
                                 <span>Subtotal:</span>
-                                <span>${getCartTotal().toFixed(2)}</span>
+                                <span>${(getCartTotal() || 0).toFixed(2)}</span>
                             </div>
 
                             <div className="summary-row">
                                 <span>Tax (13%):</span>
-                                <span>${getTax().toFixed(2)}</span>
+                                <span>${(getTax() || 0).toFixed(2)}</span>
                             </div>
 
                             <div className="summary-row">
@@ -240,7 +328,7 @@ const Checkout = () => {
 
                             <div className="summary-row total">
                                 <span>Total:</span>
-                                <span>${(getGrandTotal() + shippingCost).toFixed(2)}</span>
+                                <span>${((getGrandTotal() || 0) + shippingCost).toFixed(2)}</span>
                             </div>
                         </div>
                     </div>

@@ -20,9 +20,6 @@ class Order(models.Model):
      postal_code=models.CharField(max_length=25)
      contact=models.PositiveIntegerField(null=True,blank=True)
      country=models.CharField(max_length=100,default='Nepal')
-     
-
-
      total_amount=models.DecimalField( max_digits=10, decimal_places=2)
      tax=models.DecimalField( max_digits=10, decimal_places=2, default=0.00)
      shipping_cost=models.DecimalField( max_digits=10, decimal_places=2, default=0.00)

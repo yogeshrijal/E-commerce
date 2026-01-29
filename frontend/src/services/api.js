@@ -228,4 +228,9 @@ export const reviewAPI = {
     deleteReview: (id) => api.delete(`/review/${id}/`),
 };
 
+// Payment API
+export const paymentAPI = {
+    verifyEsewa: (data) => api.post('/payments/verify_esewa/', data),
+};
+
 export default api;

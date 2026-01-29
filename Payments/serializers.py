@@ -45,9 +45,9 @@ class PaymentSerializer(ModelSerializer):
 
 
 class EsewaVerificationSerializer(serializers.Serializer):
-     oid=serializers.CharField()
-     amt=serializers.DecimalField(max_digits=10,decimal_places=2)
-     refID=serializers.CharField()
+     transaction_uuid=serializers.CharField(required=True)
+     total_amount=serializers.DecimalField(max_digits=10,decimal_places=2)
+     transaction_code=serializers.CharField(required=True)
      
 
 
