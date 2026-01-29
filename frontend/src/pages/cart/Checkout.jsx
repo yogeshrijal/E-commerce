@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
-import { orderAPI } from '../../services/api';
+import { orderAPI, paymentAPI } from '../../services/api';
 import { toast } from 'react-toastify';
+import CryptoJS from 'crypto-js';
 
 const Checkout = () => {
     const { cartItems, getCartTotal, getTax, getGrandTotal, clearCart } = useCart();
@@ -64,6 +65,14 @@ const Checkout = () => {
         }
     };
 
+    const generateSignature = (totalAmount, transactionUuid, productCode) => {
+        const signatureString = `total_amount=${totalAmount},transaction_uuid=${transactionUuid},product_code=${productCode}`;
+        const secretKey = "8gBm/:&EnhH.1/q"; // Test Secret Key
+        const hash = CryptoJS.HmacSHA256(signatureString, secretKey);
+        const signature = CryptoJS.enc.Base64.stringify(hash);
+        return signature;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -76,7 +85,7 @@ const Checkout = () => {
                 tax: getTax(),
                 shipping_cost: shippingCost,
                 order_item: cartItems.map((item) => ({
-                    sku: item.sku.id || item.sku.sku_code, // Send SKU ID if available
+                    sku: Number(item.sku.id), // Backend expects integer ID
                     quantity_at_purchase: item.quantity,
                 })),
             };
@@ -87,19 +96,42 @@ const Checkout = () => {
             const orderId = response.data.id;
 
             if (paymentMethod === 'esewa') {
-                // Construct eSewa form data
-                const totalAmount = getGrandTotal() + shippingCost;
-                const path = "https://uat.esewa.com.np/epay/main";
+                // Construct eSewa v2 form data
+                let totalAmountVal = getGrandTotal() + shippingCost;
+                // Fix potential floating point issues
+                totalAmountVal = Math.round(totalAmountVal * 100) / 100;
+
+                // Match backend verification logic: whole numbers as integers, decimals with 2 places
+                const totalAmount = (totalAmountVal % 1 === 0)
+                    ? totalAmountVal.toString()  // "1356" for whole numbers
+                    : totalAmountVal.toFixed(2);  // "1356.50" for decimals
+                const transactionUuid = `${orderId}-${Date.now()}`; // Unique ID for every attempt
+
+                // Create Payment record in backend first
+                await paymentAPI.createPayment({
+                    order: orderId,
+                    amount: totalAmount,
+                    method: 'esewa',
+                    status: 'pending',
+                    transaction_uuid: transactionUuid
+                });
+
+                const productCode = "EPAYTEST";
+                const signature = generateSignature(totalAmount, transactionUuid, productCode);
+
+                const path = "https://rc-epay.esewa.com.np/api/epay/main/v2/form";
                 const params = {
-                    amt: totalAmount,
-                    psc: 0,
-                    pdc: 0,
-                    txAmt: 0,
-                    tAmt: totalAmount,
-                    pid: orderId,
-                    scd: "EPAYTEST",
-                    su: `${window.location.origin}/payment/success?oid=${orderId}&amt=${totalAmount}`,
-                    fu: `${window.location.origin}/payment/failure`
+                    amount: totalAmount,
+                    tax_amount: 0,
+                    total_amount: totalAmount,
+                    transaction_uuid: transactionUuid,
+                    product_code: productCode,
+                    product_service_charge: 0,
+                    product_delivery_charge: 0,
+                    success_url: `${window.location.origin}/payment/success`,
+                    failure_url: `${window.location.origin}/payment/failure?oid=${orderId}`,
+                    signed_field_names: "total_amount,transaction_uuid,product_code",
+                    signature: signature,
                 };
 
                 // Create a hidden form and submit it

@@ -230,7 +230,8 @@ export const reviewAPI = {
 
 // Payment API
 export const paymentAPI = {
-    verifyEsewa: (data) => api.post('/payments/verify_esewa/', data),
+    verifyEsewa: (data) => api.post('/payment/verify_esewa/', data),
+    createPayment: (data) => api.post('/payment/', data),
 };
 
 export default api;

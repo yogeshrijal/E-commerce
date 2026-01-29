@@ -6,18 +6,27 @@ from Products.models import ProductSKU
 from django.db import transaction
 from django.conf import settings
 from shipping.models import GlobalShippingrate,ShippingZone
+from Payments.models import Payment
 class OrderItemSerializer(ModelSerializer):
     class Meta:
         model=OrderItem
         fields=['id','order','sku', 'price_at_purchase','quantity_at_purchase']
         read_only_fields=['price_at_purchase', 'order']
+
+
+class SimplePaymentSerializer(ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = ['id', 'status', 'amount', 'method', 'transaction_uuid']
+
 class OrderSerializer(ModelSerializer):
     order_item=OrderItemSerializer(many=True ,required=True)
+    payment_details = SimplePaymentSerializer(many=True, read_only=True)
     class Meta:
         model=Order
         fields=['id',  'full_name', 'email', 'contact', 'address', 
             'city', 'postal_code','country', 'total_amount', 'tax', 
-            'shipping_cost', 'status', 'order_item', 'created_at','transaction_id','updated_at']
+            'shipping_cost', 'status', 'order_item', 'created_at','transaction_id','updated_at', 'payment_details']
         read_only_fields=['transaction_id','created_at','updated_at','shipping_cost','tax','total_amount']
     def validate_order_item(self,value):
         if not value:

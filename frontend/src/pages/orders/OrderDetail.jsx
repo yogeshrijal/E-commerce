@@ -212,7 +212,9 @@ const OrderDetail = () => {
                             <div className="info-row">
                                 <span>Payment Status:</span>
                                 <span className={`status-badge ${order.payment_details?.[0]?.status || 'pending'}`}>
-                                    {order.payment_details?.[0]?.status || 'Pending'}
+                                    {order.payment_details?.[0]?.status
+                                        ? order.payment_details[0].status.charAt(0).toUpperCase() + order.payment_details[0].status.slice(1)
+                                        : 'Pending'}
                                 </span>
                             </div>
                         </div>

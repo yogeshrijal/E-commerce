@@ -1,77 +1,106 @@
-
 from django.shortcuts import render
-from Payments.serializers import PaymentSerializer,EsewaVerificationSerializer
+from Payments.serializers import PaymentSerializer, EsewaVerificationSerializer
 from Payments.models import Payment
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
-import requests
-import xml.etree.ElementTree as ET
 from rest_framework.response import Response
-from rest_framework import status
+import requests
 
 
-
-# Create your views here.
 class PaymentViewSet(viewsets.ModelViewSet):
-    queryset=Payment.objects.all()
-    serializer_class=PaymentSerializer
-    authentication_classes=[JWTAuthentication]
-    permission_classes=[IsAuthenticated]
+    queryset = Payment.objects.all()
+    serializer_class = PaymentSerializer
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Payment.objects.filter(user=self.request.user)
-    
+
     @action(
         detail=False,
         methods=['post'],
         serializer_class=EsewaVerificationSerializer
-        
-
     )
-    def verify_esewa(self,request):
-        serializer=self.get_serializer(data=request.data)
+    def verify_esewa(self, request):
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        data=serializer.validated_data
-        oid=data['oid']
-        amt=data['amt']
-        refID=data['refID']
+        data = serializer.validated_data
+        transaction_uuid = data['transaction_uuid'] 
+        total_amount = data['total_amount']         
+        transaction_code = data['transaction_code']
+
         url = "https://rc-epay.esewa.com.np/api/epay/transaction/status/"
+        raw_uuid=data['transaction_uuid']
+        if "-" in str(raw_uuid):
+            order_id = str(raw_uuid).split("-")[0]
+        else:
+            order_id = raw_uuid
+        try:
+            payment = Payment.objects.get(
+                order__id=order_id,
+                status='pending'
+            )
+        except Payment.DoesNotExist:
+            return Response(
+                {"error": "Pending payment not found for this Order ID"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        clean_amount = payment.amount
+        if clean_amount % 1 == 0:
+            clean_amount = int(clean_amount)
 
 
-
-        params={
+        params = {
             'product_code': 'EPAYTEST',
-             'total_amount': amt,
-            'transaction_uuid': oid,
-            
+            'total_amount':str(clean_amount),
+            'transaction_uuid': transaction_uuid,
         }
         
-        
+
         try:
-            response=requests.get(url,params=params)
-            resp_data=response.json()
-            status_value=resp_data.get('status')
+            response = requests.get(url, params=params)
+            resp_data = response.json()
+            status_value = resp_data.get('status')
 
-
-            if status_value=='COMPLETE':
-                payment = Payment.objects.get(order__id=oid, status='pending')
-                
+            if status_value == 'COMPLETE':
                 payment.status = 'completed'
-                payment.gateway_transaction_id = refID
+                payment.gateway_transaction_id = resp_data.get('ref_id') or transaction_code 
+                payment.raw_json = resp_data
                 payment.save()
-                payment.order.status = 'processing' 
+
+                payment.order.status = 'processing'
                 payment.order.save()
 
-                return Response({"status": "Payment Verified"}, status=status.HTTP_200_OK)
+                return Response(
+                    {"status": "Payment Verified"},
+                    status=status.HTTP_200_OK
+                )
+
+            elif status_value in ['CANCELED','USER_CANCELED','FAILED','EXPIRED','ABANDONED']:
+                payment.status = 'failed'
+                payment.gateway_transaction_id = resp_data.get('ref_id') or transaction_code 
+                payment.raw_json = resp_data
+                payment.save()
+
+                payment.order.status = 'canceled'
+                payment.order.save()
+
+                return Response(
+                    {"status": "Payment Failed"},
+                    status=status.HTTP_200_OK
+                )
+            
             else:
-                return Response({"error": "Verification Failed"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"error": "Verification Failed"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
-        except Payment.DoesNotExist:
-             return Response({"error": "Pending payment not found for this Order ID"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

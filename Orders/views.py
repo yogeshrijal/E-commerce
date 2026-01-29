@@ -7,6 +7,7 @@ from rest_framework.permissions import SAFE_METHODS
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status 
+from Payments.models import Payment
 
 
 # Create your views here.
@@ -104,6 +105,8 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         if old_status!= 'canceled' and instance.status == 'canceled':
             self.restore_stock(instance)
+           
+            Payment.objects.filter(order=instance).update(status='failed')
              
         return response
 

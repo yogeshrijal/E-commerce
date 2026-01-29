@@ -14,6 +14,7 @@ class Payment(models.Model):
         ('pending','Pending'),
         ('completed','Completed'),
         ('failed','Failed'),
+    
     ]
 
     order=models.ForeignKey(Order,  on_delete=models.CASCADE,related_name='payment_details')
@@ -24,6 +25,7 @@ class Payment(models.Model):
     gateway_transaction_id=models.CharField(max_length=100,unique=True,blank=True,null=True)
     raw_json=models.JSONField(null=True,blank=True)
     created_at=models.DateTimeField(default=timezone.now)
+    transaction_uuid=models.CharField(max_length=100,unique=True,blank=True,null=True)
 
 
     def  __str__(self):
