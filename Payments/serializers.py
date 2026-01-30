@@ -10,8 +10,8 @@ import uuid
 class PaymentSerializer(ModelSerializer):
         class Meta:
             model=Payment
-            fields=['order','user','method','amount','status','gateway_transaction_id','raw_json','created_at','transaction_uuid']
-            read_only_fields=['user','amount','status','gateway_transaction_id','raw_json','created_at']
+            fields=['order','user','method','amount','status','gateway_transaction_id','raw_json','created_at','transaction_uuid','pidx']
+            read_only_fields=['user','amount','status','gateway_transaction_id','raw_json','created_at','pidx']
 
 
         def validate_order(self,order):
@@ -55,6 +55,11 @@ class EsewaVerificationSerializer(serializers.Serializer):
         transaction_uuid=serializers.CharField(required=True)
         total_amount=serializers.DecimalField(max_digits=10,decimal_places=2)
         transaction_code=serializers.CharField(required=True)
+
+
+class KhaltiVerificationSerializer(serializers.Serializer):
+      pidx=serializers.CharField(required=True)
+      transaction_uuid=serializers.CharField(required=False)
         
 
 

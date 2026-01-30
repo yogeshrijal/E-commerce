@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from Payments.serializers import PaymentSerializer, EsewaVerificationSerializer
+from Payments.serializers import PaymentSerializer, EsewaVerificationSerializer,KhaltiVerificationSerializer
 from Payments.models import Payment
 from rest_framework import viewsets, status
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -19,6 +19,107 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Payment.objects.filter(user=self.request.user)
+    @action(
+                detail=False,
+                methods=['post'],
+                serializer_class=KhaltiVerificationSerializer,
+
+        )
+    def verify_khalti(self,request):
+        serializer=self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        pidx=serializer.validated_data['pidx']
+        url = "https://a.khalti.com/api/v2/epayment/lookup/"
+        headers={
+            'Authorization':'Key ',
+            'Content-Type':'application/json',
+
+        }
+        payload={
+            'pidx':pidx
+        }
+        try:
+            response=requests.post(url,headers=headers,json=payload)
+            resp_data=response.json()
+            khalti_status=resp_data.get('status')
+
+
+            try:
+                payment=Payment.objects.get(pidx=pidx)
+            except Payment.DoesNotExist:
+                transaction_uuid=resp_data.get('purchase_order_id')
+                if not transaction_uuid:
+                    return Response('payment not found',status=status.HTTP_404_NOT_FOUND)
+                try:
+                    payment=Payment.objects.get(transaction_uuid=transaction_uuid)
+                except Payment.DoesNotExist:
+                    return Response({"error":"payment not found in system"},status=status.HTTP_404_NOT_FOUND)
+            
+
+            if khalti_status == 'Completed':
+                khalti_amount = Decimal(resp_data.get('total_amount', 0)) / 100
+
+            
+                if khalti_amount != Decimal(payment.amount):
+                            return Response(
+                                {
+                                    "error": "Amount mismatch", 
+                                    "khalti_amount": khalti_amount, 
+                                    "db_amount": payment.amount
+                                }, 
+                                status=status.HTTP_400_BAD_REQUEST
+                            )
+                payment.status='completed'
+                payment.gateway_transaction_id=resp_data.get('transaction_id')
+                payment.raw_json=resp_data
+                payment.save()
+
+                payment.order.status='processing'
+                payment.order.save()
+
+                return Response({"status": "Payment Verified via Khalti"}, status=status.HTTP_200_OK)
+        
+
+
+
+            elif khalti_status in ['User canceled', 'Expired', 'Refunded']:
+                payment.status = 'failed'
+                payment.raw_json = resp_data
+                payment.save()
+
+                payment.order.status = 'canceled'
+                payment.order.save()
+
+                return Response(
+                    {"error": f"Payment {khalti_status}"},
+                    status=status.HTTP_200_OK
+                )
+            else:
+               return Response({'error': f'Payment current status: {payment.order.status}'},status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)    
+            
+
+
+
+
+
+
+        
+    
+    
+    
+    
+    
+
+        
+
+        
+
+
+
+
 
     @action(
         detail=False,
@@ -105,7 +206,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
             elif status_value == 'NOT_FOUND':
                 if DEV_MODE:
                     # In development mode, auto-approve NOT_FOUND transactions for testing
-                    print(f"🔧 DEV_MODE: Auto-approving NOT_FOUND transaction {transaction_uuid}")
+                    print(f" DEV_MODE: Auto-approving NOT_FOUND transaction {transaction_uuid}")
                     payment.status = 'completed'
                     payment.gateway_transaction_id = f"DEV_{transaction_code}"
                     payment.raw_json = {"dev_mode": True, "original_response": resp_data}
@@ -148,4 +249,5 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+        
 

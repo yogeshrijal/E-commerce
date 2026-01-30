@@ -7,6 +7,7 @@ from django.utils import timezone
 class Payment(models.Model):
     PAYMENT_CHOICES=[
         ('esewa','eSewa'),
+        ('khalti','Khalti'),
         ('cod','Cash on Delivery')
     ]
 
@@ -26,6 +27,7 @@ class Payment(models.Model):
     raw_json=models.JSONField(null=True,blank=True)
     created_at=models.DateTimeField(default=timezone.now)
     transaction_uuid=models.CharField(max_length=100,unique=True,blank=True,null=True)
+    pidx=models.CharField(max_length=50,unique=True,blank=True,null=True)
 
 
     def  __str__(self):
