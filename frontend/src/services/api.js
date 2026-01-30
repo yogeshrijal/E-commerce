@@ -230,6 +230,8 @@ export const reviewAPI = {
 
 // Payment API
 export const paymentAPI = {
+    getPayments: () => api.get('/payment/'),
+    deletePayment: (id) => api.delete(`/payment/${id}/`),
     verifyEsewa: (data) => api.post('/payment/verify_esewa/', data),
     createPayment: (data) => api.post('/payment/', data),
 };

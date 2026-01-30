@@ -217,6 +217,14 @@ const OrderDetail = () => {
                                         : 'Pending'}
                                 </span>
                             </div>
+                            <div className="info-row">
+                                <span>Payment Method:</span>
+                                <span>
+                                    {order.payment_details?.[0]?.method === 'esewa' ? 'eSewa Mobile Wallet' :
+                                        order.payment_details?.[0]?.method === 'cod' ? 'Cash on Delivery' :
+                                            'Cash on Delivery'}
+                                </span>
+                            </div>
                         </div>
 
                         <div className="shipping-info-card">

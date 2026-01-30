@@ -116,6 +116,23 @@ const Checkout = () => {
                     : totalAmountVal.toFixed(2);  // "1356.50" for decimals
                 const transactionUuid = `${orderId}-${Date.now()}`; // Unique ID for every attempt
 
+                // Clean up any existing pending payments for this order to prevent backend conflicts
+                try {
+                    const allPayments = await paymentAPI.getPayments();
+                    // Filter for pending payments for this specific order
+                    const pendingPayments = allPayments.data.filter(
+                        p => p.order === orderId && p.status === 'pending'
+                    );
+
+                    if (pendingPayments.length > 0) {
+                        console.log(`Cleaning up ${pendingPayments.length} pending payments for order ${orderId}`);
+                        await Promise.all(pendingPayments.map(p => paymentAPI.deletePayment(p.id)));
+                    }
+                } catch (err) {
+                    console.warn('Failed to cleanup old payments:', err);
+                    // Continue flow - if cleanup fails, we still try to proceed
+                }
+
                 // Create Payment record in backend first
                 await paymentAPI.createPayment({
                     order: orderId,
@@ -159,6 +176,24 @@ const Checkout = () => {
                 document.body.appendChild(form);
                 form.submit();
             } else {
+                // For COD, create a pending payment record as well so we can track it
+                let totalAmountVal = getGrandTotal() + shippingCost;
+                totalAmountVal = Math.round(totalAmountVal * 100) / 100;
+                const totalAmount = (totalAmountVal % 1 === 0) ? totalAmountVal.toString() : totalAmountVal.toFixed(2);
+
+                // Try to create payment record for COD (failure shouldn't block order success though)
+                try {
+                    await paymentAPI.createPayment({
+                        order: orderId,
+                        amount: totalAmount,
+                        method: 'cod',
+                        status: 'pending',
+                        transaction_uuid: `${orderId}-COD-${Date.now()}`
+                    });
+                } catch (err) {
+                    console.error('Failed to create COD payment record:', err);
+                }
+
                 toast.success('Order placed successfully!');
                 clearCart();
                 navigate(`/orders/${orderId}`);
