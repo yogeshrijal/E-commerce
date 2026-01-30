@@ -7,6 +7,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 import requests
+from django.conf import settings
+DEV_MODE = getattr(settings, 'ESEWA_DEV_MODE', True)
 
 
 class PaymentViewSet(viewsets.ModelViewSet):
@@ -63,7 +65,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
         try:
             response = requests.get(url, params=params)
             resp_data = response.json()
-            status_value = resp_data.get('status')
+            status_value = resp_data.get('status', '').upper()
 
             if status_value == 'COMPLETE':
                 payment.status = 'completed'
@@ -93,9 +95,51 @@ class PaymentViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_200_OK
                 )
             
-            else:
+            elif status_value == 'PENDING':
+           
                 return Response(
-                    {"error": "Verification Failed"},
+                    {"error": "Payment is still processing. Please try again in a moment."},
+                    status=status.HTTP_202_ACCEPTED
+                )
+            
+            elif status_value == 'NOT_FOUND':
+                if DEV_MODE:
+                    # In development mode, auto-approve NOT_FOUND transactions for testing
+                    print(f"🔧 DEV_MODE: Auto-approving NOT_FOUND transaction {transaction_uuid}")
+                    payment.status = 'completed'
+                    payment.gateway_transaction_id = f"DEV_{transaction_code}"
+                    payment.raw_json = {"dev_mode": True, "original_response": resp_data}
+                    payment.save()
+
+                    payment.order.status = 'processing'
+                    payment.order.save()
+
+                    return Response(
+                        {
+                            "status": "Payment Verified",
+                            "dev_mode": True,
+                            "message": "Development mode: Payment auto-approved"
+                        },
+                        status=status.HTTP_200_OK
+                    )
+                else:
+                    return Response(
+                        {
+                            "error": "Transaction not found",
+                            "details": "This transaction was not found in eSewa's system. This can happen if: 1) The payment was not completed, 2) Using test credentials with real transactions, or 3) The transaction is too old.",
+                            "transaction_uuid": transaction_uuid
+                        },
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+            
+            else:
+                
+                return Response(
+                    {
+                        "error": "Verification Failed",
+                        "details": f"Unexpected status: {status_value}",
+                        "esewa_response": resp_data
+                    },
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
@@ -104,3 +148,4 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+

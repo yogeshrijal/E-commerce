@@ -42,11 +42,13 @@ const PaymentSuccess = () => {
                 let totalAmount = parseFloat(paymentInfo.total_amount);
                 totalAmount = (totalAmount % 1 === 0) ? totalAmount.toString() : totalAmount.toFixed(2);
 
-                const response = await paymentAPI.verifyEsewa({
+                const verificationPayload = {
                     transaction_uuid: paymentInfo.transaction_uuid,
                     total_amount: totalAmount,
                     transaction_code: paymentInfo.transaction_code
-                });
+                };
+
+                const response = await paymentAPI.verifyEsewa(verificationPayload);
 
                 if (response.data.status === 'Payment Failed') {
                     toast.error('Payment failed. Order has been canceled.');
@@ -55,12 +57,17 @@ const PaymentSuccess = () => {
                 }
 
                 toast.success('Payment verified successfully!');
-                // Extract order ID from transaction_uuid (it is now just the order ID)
-                const orderId = paymentInfo.transaction_uuid;
+                // Extract order ID from transaction_uuid (format is orderId-timestamp)
+                const orderId = paymentInfo.transaction_uuid.split('-')[0];
                 navigate(`/orders/${orderId}`);
             } catch (error) {
                 console.error('Payment verification failed:', error);
-                toast.error(error.response?.data?.error || 'Payment verification failed');
+
+                const errorMessage = error.response?.data?.details
+                    || error.response?.data?.error
+                    || 'Payment verification failed';
+
+                toast.error(errorMessage);
                 navigate('/payment/failure');
             } finally {
                 setVerifying(false);

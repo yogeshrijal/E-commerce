@@ -10,7 +10,7 @@ import uuid
 class PaymentSerializer(ModelSerializer):
         class Meta:
             model=Payment
-            fields=['order','user','method','amount','status','gateway_transaction_id','raw_json','created_at']
+            fields=['order','user','method','amount','status','gateway_transaction_id','raw_json','created_at','transaction_uuid']
             read_only_fields=['user','amount','status','gateway_transaction_id','raw_json','created_at']
 
 
@@ -30,7 +30,11 @@ class PaymentSerializer(ModelSerializer):
         def create(self, validated_data):
             request=self.context.get('request')
             order=validated_data['order']
-            transaction_uuid = f"{order.id}-{uuid.uuid4()}"
+            
+            # Use transaction_uuid from frontend if provided, otherwise generate one
+            transaction_uuid = validated_data.get('transaction_uuid')
+            if not transaction_uuid:
+                transaction_uuid = f"{order.id}-{uuid.uuid4()}"
 
             final_ammount=getattr(order,'total_amount',0)
 
@@ -40,7 +44,7 @@ class PaymentSerializer(ModelSerializer):
                 amount=final_ammount,
                 transaction_uuid=transaction_uuid,
                 status='pending',
-                **validated_data
+                **{k: v for k, v in validated_data.items() if k != 'transaction_uuid'}
             )
 
             return payement

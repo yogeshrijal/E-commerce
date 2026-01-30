@@ -78,6 +78,15 @@ const Checkout = () => {
         setLoading(true);
 
         try {
+            // Validate cart items before submitting
+            const invalidItems = cartItems.filter(item => !item?.sku?.id);
+            if (invalidItems.length > 0) {
+                toast.error('Some items in your cart are invalid. Please remove them and try again.');
+                console.error('Invalid cart items:', invalidItems);
+                setLoading(false);
+                return;
+            }
+
             // Prepare order data
             const orderData = {
                 ...formData,
