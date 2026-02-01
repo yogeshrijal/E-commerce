@@ -19,12 +19,13 @@ const ProductForm = () => {
         base_price: '',
         stock: '',
         image: null,
+        existingImage: null,
     });
     const [specs, setSpecs] = useState([{ attribute: '', value: '' }]);
     const [skus, setSkus] = useState([
         { sku_code: '', price: '', stock: '', image: null, sku_attribute: [{ attribute: '', value: '' }] },
     ]);
-    
+
     const originalSkus = useRef(null);
 
     useEffect(() => {
@@ -52,11 +53,14 @@ const ProductForm = () => {
             setFormData({
                 name: product.name,
                 description: product.description,
-                category: product.category,
-                parent_category: product.parent_category || '',
+                // If product has a parent_category (backend), that is the Root category for frontend.
+                // The actual category (backend) becomes the Subcategory for frontend.
+                category: product.parent_category ? product.parent_category : product.category,
+                parent_category: product.parent_category ? product.category : '',
                 base_price: product.base_price,
                 stock: product.stock,
                 image: null,
+                existingImage: product.image,
             });
 
             if (product.specs && product.specs.length > 0) {
@@ -75,7 +79,7 @@ const ProductForm = () => {
                     })),
                 }));
                 setSkus(loadedSkus);
-                
+
                 originalSkus.current = JSON.parse(JSON.stringify(loadedSkus));
             }
         } catch (error) {
@@ -88,7 +92,7 @@ const ProductForm = () => {
 
     const haveSkusChanged = () => {
         if (!originalSkus.current) return true; // New product
-        
+
         if (skus.length !== originalSkus.current.length) {
             return true;
         }
@@ -202,11 +206,17 @@ const ProductForm = () => {
                 base_price: parseFloat(formData.base_price),
                 stock: parseInt(formData.stock),
                 image: formData.image,
-                specs: specs.filter((s) => s.attribute && s.value),
+                specs: specs
+                    .filter((s) => s.attribute && s.value)
+                    .map(s => ({
+                        id: s.id || undefined, // Include ID if it exists (for updates)
+                        attribute: s.attribute,
+                        value: s.value
+                    })),
             };
 
             const skusChanged = haveSkusChanged();
-            
+
             if (skusChanged) {
                 productData.skus = skus
                     .filter((sku) => sku.sku_code && sku.price && sku.stock)
@@ -215,7 +225,6 @@ const ProductForm = () => {
                         sku_code: sku.sku_code,
                         price: parseFloat(sku.price),
                         stock: parseInt(sku.stock),
-                        image: sku.image || undefined,
                         sku_attribute: sku.sku_attribute
                             .filter((attr) => attr.attribute && attr.value)
                             .map((attr) => ({
@@ -360,6 +369,16 @@ const ProductForm = () => {
 
                         <div className="form-group">
                             <label htmlFor="image">Product Image</label>
+                            {formData.existingImage && !formData.image && (
+                                <div className="existing-image-preview" style={{ marginBottom: '10px' }}>
+                                    <img
+                                        src={formData.existingImage}
+                                        alt="Current Product"
+                                        style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'contain', borderRadius: '4px' }}
+                                    />
+                                    <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginTop: '5px' }}>Current Image</p>
+                                </div>
+                            )}
                             <input
                                 type="file"
                                 id="image"

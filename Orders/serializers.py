@@ -28,6 +28,17 @@ class OrderSerializer(ModelSerializer):
             'city', 'postal_code','country', 'total_amount', 'tax', 
             'shipping_cost', 'status', 'order_item', 'created_at','transaction_id','updated_at', 'payment_details']
         read_only_fields=['transaction_id','created_at','updated_at','shipping_cost','tax','total_amount']
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get('request')
+
+        if request and hasattr(request.user, 'role') and request.user.role == 'seller':
+            seller_items = instance.order_item.filter(sku__product__created_by=request.user)
+            data['order_item'] = OrderItemSerializer(seller_items, many=True).data
+        
+        return data
+
     def validate_order_item(self,value):
         if not value:
             raise serializers.ValidationError('atleast one item should be present')

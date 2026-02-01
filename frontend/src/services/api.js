@@ -142,10 +142,10 @@ export const productAPI = {
                 jsonData.is_active = data.is_active;
             }
 
-            if (data.specs && data.specs.length > 0) {
+            if (data.specs) {
                 jsonData.specs = data.specs;
             }
-            if (data.skus && data.skus.length > 0) {
+            if (data.skus) {
                 jsonData.skus = data.skus;
             }
 
@@ -166,10 +166,10 @@ export const productAPI = {
             jsonData.is_active = data.is_active;
         }
 
-        if (data.specs && data.specs.length > 0) {
+        if (data.specs) {
             jsonData.specs = data.specs;
         }
-        if (data.skus && data.skus.length > 0) {
+        if (data.skus) {
             jsonData.skus = data.skus;
         }
 

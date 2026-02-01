@@ -1,5 +1,5 @@
 .my-products-page {
-    background-color: #f8f9fa;
+    background-color: var(--bg-secondary);
     min-height: 100vh;
     padding-bottom: 2rem;
 }
@@ -14,16 +14,16 @@
 
 .page-header h1 {
     font-size: 2rem;
-    color: #2c3e50;
+    color: var(--text-primary);
     font-weight: 700;
     margin: 0;
 }
 
 .products-controls-container {
-    background: white;
+    background: var(--bg-primary);
     padding: 1.5rem;
     border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--shadow-sm);
     margin-bottom: 2rem;
     display: flex;
     gap: 2rem;
@@ -41,7 +41,7 @@
 
 .control-group label {
     font-size: 0.85rem;
-    color: #64748b;
+    color: var(--text-secondary);
     font-weight: 600;
     margin-bottom: 0.5rem;
 }
@@ -50,30 +50,31 @@
 .control-select {
     width: 100%;
     padding: 0.75rem 1rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 0.95rem;
-    color: #2d3748;
-    background-color: #fff;
+    color: var(--text-primary);
+    background-color: var(--bg-primary);
     transition: all 0.2s ease;
     outline: none;
 }
 
 .control-input:focus,
 .control-select:focus {
-    border-color: #4299e1;
+    border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
 }
 
 .control-input::placeholder {
-    color: #a0aec0;
+    color: var(--text-light);
 }
 
 .products-table-container {
-    background: white;
+    background: var(--bg-primary);
     border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--shadow-sm);
     overflow: hidden;
+    overflow-x: auto;
 }
 
 .products-table {
@@ -82,22 +83,22 @@
 }
 
 .products-table th {
-    background-color: #f8fafc;
+    background-color: var(--bg-tertiary);
     padding: 1rem 1.5rem;
     text-align: left;
     font-size: 0.85rem;
     font-weight: 600;
-    color: #64748b;
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .products-table td {
     padding: 1rem 1.5rem;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid var(--border-color);
     vertical-align: middle;
-    color: #334155;
+    color: var(--text-primary);
 }
 
 .products-table tr:last-child td {
@@ -105,7 +106,7 @@
 }
 
 .products-table tr:hover {
-    background-color: #f8fafc;
+    background-color: var(--bg-tertiary);
 }
 
 .product-image-cell img {
@@ -113,19 +114,19 @@
     height: 48px;
     border-radius: 6px;
     object-fit: cover;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-color);
 }
 
 .no-image {
     width: 48px;
     height: 48px;
     border-radius: 6px;
-    background-color: #f1f5f9;
+    background-color: var(--bg-tertiary);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.7rem;
-    color: #94a3b8;
+    color: var(--text-light);
     text-align: center;
 }
 
@@ -140,13 +141,13 @@
 }
 
 .status-badge.active {
-    background-color: #dcfce7;
-    color: #166534;
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
 }
 
 .status-badge.inactive {
-    background-color: #f1f5f9;
-    color: #475569;
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
 }
 
 .status-badge:hover {
@@ -161,7 +162,7 @@
 .btn-link {
     font-size: 0.9rem;
     font-weight: 500;
-    color: #3b82f6;
+    color: var(--primary-color);
     text-decoration: none;
     background: none;
     border: none;
@@ -174,19 +175,19 @@
 }
 
 .btn-link.danger {
-    color: #ef4444;
+    color: var(--danger-color);
 }
 
 .empty-state {
     text-align: center;
     padding: 4rem 2rem;
-    background: white;
+    background: var(--bg-primary);
     border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--shadow-sm);
 }
 
 .empty-state p {
-    color: #64748b;
+    color: var(--text-secondary);
     margin-bottom: 1.5rem;
     font-size: 1.1rem;
 }
