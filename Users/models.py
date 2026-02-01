@@ -1,6 +1,7 @@
 from django.db import models
-
+from datetime import timedelta
 from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
 
 # Create your models here.
 class User(AbstractUser):
@@ -19,5 +20,22 @@ class User(AbstractUser):
         return f"{self.username} ({self.role})"
     
        
+class PasswordResetToken(models.Model):
+    user=models.ForeignKey(User,on_delete=models.CASCADE)
+    token=models.CharField( max_length=70)
+    created_at=models.DateTimeField( default=timezone.now)
+    is_used=models.BooleanField(default=False)
 
+
+    def is_valid(self):
+        expire_time=self.created_at + timedelta(minutes=15)
+        return timezone.now() <=expire_time and not self.is_used 
+    
+
+
+    def  __str__(self):
+        return f"The reset token is {self.user.username}"
+    
+
+   
 

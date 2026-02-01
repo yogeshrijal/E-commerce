@@ -28,31 +28,31 @@ const OrderHistory = () => {
             const ordersToCancel = [];
 
             // Check for stale pending orders
-            fetchedOrders.forEach(order => {
-                if (order.status === 'pending') {
-                    const createdTime = new Date(order.created_at).getTime();
-                    if (now - createdTime > STALE_THRESHOLD_MS) {
-                        ordersToCancel.push(order.id);
-                    }
-                }
-            });
+            // fetchedOrders.forEach(order => {
+            //     if (order.status === 'pending') {
+            //         const createdTime = new Date(order.created_at).getTime();
+            //         if (now - createdTime > STALE_THRESHOLD_MS) {
+            //             ordersToCancel.push(order.id);
+            //         }
+            //     }
+            // });
 
             // Cancel stale orders
-            if (ordersToCancel.length > 0) {
-                await Promise.all(ordersToCancel.map(id =>
-                    orderAPI.updateOrder(id, { status: 'canceled' })
-                ));
+            // if (ordersToCancel.length > 0) {
+            //     await Promise.all(ordersToCancel.map(id =>
+            //         orderAPI.updateOrder(id, { status: 'canceled' })
+            //     ));
 
-                // Update local state to reflect cancellation
-                fetchedOrders = fetchedOrders.map(order =>
-                    ordersToCancel.includes(order.id)
-                        ? { ...order, status: 'canceled' }
-                        : order
-                );
+            //     // Update local state to reflect cancellation
+            //     fetchedOrders = fetchedOrders.map(order =>
+            //         ordersToCancel.includes(order.id)
+            //             ? { ...order, status: 'canceled' }
+            //             : order
+            //     );
 
-                // Optional: Notify user
-                // toast.info(`${ordersToCancel.length} incomplete order(s) were canceled.`);
-            }
+            //     // Optional: Notify user
+            //     // toast.info(`${ordersToCancel.length} incomplete order(s) were canceled.`);
+            // }
 
             setOrders(fetchedOrders);
             setProducts(productsRes.data);

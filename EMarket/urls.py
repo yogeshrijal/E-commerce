@@ -20,7 +20,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenObtainPairView ,TokenRefreshView,TokenVerifyView
 from rest_framework.routers import DefaultRouter
-from Users.views import UserViewSet
+from Users.views import UserViewSet,PasswordResetTokenViewSet,ResetPasswordViewset
 from Products.views import ProductViewSet,CategoryViewSet
 from Orders.views import OrderViewSet
 from shipping.views import GlobalShippingSerializerViewset,ShippingZoneViewset
@@ -35,6 +35,8 @@ router.register('shippingzone',ShippingZoneViewset,basename='shippingzone')
 router.register('globalshippingrate',GlobalShippingSerializerViewset,basename='globalshippingrate')
 router.register('review',ReviewViewset,basename='review')
 router.register('payment',PaymentViewSet,basename='payment')
+router.register('reset-password',PasswordResetTokenViewSet,basename='reset-password')
+router.register('reset-password-confirm',ResetPasswordViewset,basename='reset-password-confirm')
 
 
 urlpatterns = [

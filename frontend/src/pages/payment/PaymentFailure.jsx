@@ -28,19 +28,24 @@ const PaymentFailure = () => {
 
                 const payments = order.payment_details || [];
                 const isCOD = payments.some(p => p.method === 'cod');
+                // Added safety: If no payment record exists, do NOT auto-cancel. 
+                // It might be a COD order where payment record creation failed or lagged.
+                // We only auto-cancel if we strongly suspect it was an abandoned/failed online payment (which usually has a pending record).
+                const hasNoPayments = payments.length === 0;
 
                 // User Requirement: 
                 // - If eSewa failed -> Auto Cancel
                 // - If COD -> Do NOT Cancel, just redirect to order detail (it's pending)
 
-                if (isCOD) {
-                    console.log('Order is COD. Preventing cancellation.');
-                    toast.info('Order placed via Cash on Delivery.');
+                if (isCOD || hasNoPayments) {
+                    console.log('Order is COD or has no payment info. Preventing auto-cancellation.');
+                    if (isCOD) toast.info('Order placed via Cash on Delivery.');
+                    // Redirect to order detail to let them handle/retry or view status
                     navigate(`/orders/${oid}`);
                     return;
                 }
 
-                // If not COD, and we are here, it means eSewa/Online payment failed.
+                // If not COD, and purely online payment pending/failed:
                 // Restore auto-cancellation for eSewa
                 console.log('Online payment failed. Auto-canceling order...');
                 await orderAPI.updateOrder(oid, { status: 'canceled' });

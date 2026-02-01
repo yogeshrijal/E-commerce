@@ -19,6 +19,9 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Payment.objects.filter(user=self.request.user)
+   
+    """ 
+   
     @action(
                 detail=False,
                 methods=['post'],
@@ -108,7 +111,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
 
         
     
-    
+     """
     
     
     

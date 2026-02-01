@@ -140,4 +140,13 @@ import os
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+STATIC_URL = 'static/'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  
+EMAIL_HOST ='smtp.gmail.com'  
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'yogesh.shrijal@bidhee.com'        
+EMAIL_HOST_PASSWORD = 'wptnxusoehadliyb'  
+DEFAULT_FROM_EMAIL = 'yogesh.shrijal@bidhee.com'  
 

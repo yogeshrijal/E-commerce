@@ -1,10 +1,11 @@
 from django.shortcuts import render
-from rest_framework import viewsets
-from Users.models import User
-from Users.serializers import UserSerializer,RegsiterUserSerializer 
+from rest_framework import viewsets,mixins,status
+from Users.models import User,PasswordResetToken
+from Users.serializers import UserSerializer,RegsiterUserSerializer,PasswordResetTokenSerializers,PasswordResetSerializer
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import  IsAuthenticated ,AllowAny
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
 
  
 # Create your views here.
@@ -32,6 +33,43 @@ class UserViewSet(viewsets.ModelViewSet):
        if user.is_authenticated and user.role=='admin':
            return User.objects.all()
        return User.objects.filter(id=user.id)
+    
+
+class PasswordResetTokenViewSet(mixins.CreateModelMixin,viewsets.GenericViewSet):
+    queryset=PasswordResetToken.objects.all()
+    serializer_class=PasswordResetTokenSerializers
+
+
+    def create(self, request, *args, **kwargs):
+        super().create(request, *args, **kwargs)
+        return Response(
+            {"message": "Password reset link sent to your email."}, 
+            status=status.HTTP_201_CREATED
+        )
+class ResetPasswordViewset(viewsets.GenericViewSet):
+    serializer_class=PasswordResetSerializer
+    
+    def create(self, request, *args, **kwargs):
+        
+        data = request.data.copy()
+        if not data.get('token'):
+            get_token = request.query_params.get('token')
+            if get_token:
+                data['token'] = get_token
+
+        
+        
+        serializer = self.get_serializer(data=data)
+         
+        
+        serializer.is_valid(raise_exception=True)
+        serializer.save() 
+        return Response(
+         {"message": "Password has been reset successfully."}, 
+                status=status.HTTP_200_OK
+            )
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     
       

@@ -70,6 +70,10 @@ class OrderViewSet(viewsets.ModelViewSet):
         
 
         if new_status=='canceled':
+            is_cod = instance.payment_details.filter(method='cod').exists()
+            if is_cod and instance.status == 'pending' and user.role != 'admin':
+                 return Response({"error":"COD orders cannot be auto-canceled. Please contact support to cancel."},status=status.HTTP_403_FORBIDDEN)
+
             if instance.status in ['shipped','delivered'] and user.role!= 'admin' :
                  return Response({"error":"cannot cancel at this stage of process"},status=status.HTTP_403_FORBIDDEN)
 
