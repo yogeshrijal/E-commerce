@@ -30,7 +30,6 @@ const ReviewList = ({ product }) => {
         try {
             setLoading(true);
             const response = await reviewAPI.getReviews();
-            // Filter reviews for this product on the client side
             const productReviews = response.data.filter(
                 (review) => review.product === product.id
             );
@@ -44,7 +43,6 @@ const ReviewList = ({ product }) => {
         }
     };
 
-    // State to store eligible order and SKU details
     const [eligibleOrder, setEligibleOrder] = useState(null);
     const [eligibleSku, setEligibleSku] = useState(null);
 
@@ -54,13 +52,11 @@ const ReviewList = ({ product }) => {
             const response = await orderAPI.getOrders();
             const orders = response.data;
 
-            // Get all valid SKU IDs for this product
             const validSkuIds = product.skus ? product.skus.map(sku => sku.id) : [];
 
             let foundOrder = null;
             let foundSkuId = null;
 
-            // Check if user has a delivered order with any SKU of this product
             const hasDeliveredProduct = orders.some(order => {
                 if (order.status !== 'delivered') return false;
 
@@ -81,7 +77,6 @@ const ReviewList = ({ product }) => {
                 setEligibleSku(null);
             }
 
-            // Also check if user has already reviewed
             const hasReviewed = reviews.some(review => review.user === user.user_id);
 
             setCanReview(hasDeliveredProduct && !hasReviewed);
@@ -94,13 +89,11 @@ const ReviewList = ({ product }) => {
     };
 
     const handleReviewAdded = (newReview) => {
-        // If editing, replace the old review
         if (editingReview) {
             setReviews(reviews.map(r => r.id === newReview.id ? newReview : r));
             setEditingReview(null);
             toast.success('Review updated successfully!');
         } else {
-            // If new, add to top
             setReviews([newReview, ...reviews]);
             toast.success('Review submitted successfully!');
         }
@@ -143,7 +136,6 @@ const ReviewList = ({ product }) => {
         ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1)
         : 0;
 
-    // Check if user has already reviewed based on the fetched reviews
     const userReview = reviews.find(r => r.user === user?.user_id);
 
     return (

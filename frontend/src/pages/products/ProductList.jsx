@@ -23,7 +23,6 @@ const ProductList = () => {
         try {
             setLoading(true);
 
-            // For rating-based sorts, use backend ordering
             const orderingParam = sortBy === 'rating-desc' ? '-avg_rating' :
                 sortBy === 'rating-asc' ? 'avg_rating' : null;
 
@@ -46,14 +45,12 @@ const ProductList = () => {
         .filter((product) => {
             const searchLower = searchTerm.toLowerCase();
 
-            // Search in product name, description, category, and parent_category
             const matchesSearch = !searchTerm ||
                 product.name.toLowerCase().includes(searchLower) ||
                 product.description.toLowerCase().includes(searchLower) ||
                 (product.category && product.category.toLowerCase().includes(searchLower)) ||
                 (product.parent_category && product.parent_category.toLowerCase().includes(searchLower));
 
-            // Match by category or parent_category (from dropdown)
             const matchesCategory = !selectedCategory ||
                 product.category === selectedCategory ||
                 product.parent_category === selectedCategory;
@@ -61,7 +58,6 @@ const ProductList = () => {
             return matchesSearch && matchesCategory;
         })
         .sort((a, b) => {
-            // Rating sorts are handled by backend, so skip client-side sorting for those
             if (sortBy === 'rating-desc' || sortBy === 'rating-asc') {
                 return 0;
             }

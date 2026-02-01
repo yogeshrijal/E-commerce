@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
-import { orderAPI, paymentAPI } from '../../services/api';
+import { orderAPI, paymentAPI, productAPI } from '../../services/api';
 import { toast } from 'react-toastify';
 import CryptoJS from 'crypto-js';
+import { formatPrice } from '../../utils/currency';
 
 const Checkout = () => {
-    const { cartItems, getCartTotal, getTax, getGrandTotal, clearCart } = useCart();
+    const { cartItems, getCartTotal, getTax, getGrandTotal, clearCart, getSellerGroups, hasMultipleSellers } = useCart();
     const { user } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
@@ -21,9 +22,9 @@ const Checkout = () => {
         country: 'Nepal', // Default country
     });
     const [paymentMethod, setPaymentMethod] = useState('cod'); // 'cod' or 'esewa'
+    const [shippingRates, setShippingRates] = useState({});
     const [shippingCost, setShippingCost] = useState(0);
-
-    useEffect(() => {
+    const [errors, setErrors] = useState({}); useEffect(() => {
         if (user) {
             setFormData(prev => ({
                 ...prev,
@@ -35,22 +36,86 @@ const Checkout = () => {
         }
     }, [user]);
 
-    // Update shipping cost when country changes
-    // Note: This logic mimics backend behavior for immediate UI feedback
+    useEffect(() => {
+        const fetchShippingRates = async () => {
+            try {
+                const response = await fetch('/api/shippingzone/');
+                const data = await response.json();
+                const rates = {};
+                data.forEach(zone => {
+                    rates[zone.country_name.toLowerCase()] = parseFloat(zone.rate);
+                });
+                setShippingRates(rates);
+
+                const initialCountry = formData.country || 'Nepal';
+                const initialRate = rates[initialCountry.toLowerCase()] || 0;
+                setShippingCost(initialRate);
+            } catch (error) {
+                console.error('Error fetching shipping rates:', error);
+                setShippingCost(0);
+            }
+        };
+        fetchShippingRates();
+    }, []);
+
     const calculateShippingCost = (country) => {
         const normalizedCountry = country.trim().toLowerCase();
-        // Assuming backend settings: National (Nepal) = 0, International = 100 (example)
-        // You might want to fetch these constants from an API if possible, 
-        // but for now we'll hardcode to match typical backend defaults or set to 0 if unknown.
-        // Since backend defaults are 0.00 in models, we'll stick to 0 for now unless specified.
-        // If you know the specific values, update them here.
-        // Based on serializers.py: 
-        // if input_country == home_country (settings.SHIPPING_HOME_COUNTRY) -> settings.SHIPPING_COST_NATIONAL
-        // else -> settings.SHIPPING_COST_INTERNATIONAL
 
-        // For this implementation, we'll keep it simple as the backend recalculates it anyway.
-        // We mainly need to send the country field.
-        return 0;
+        return shippingRates[normalizedCountry] || 0;
+    };
+
+    const validateField = (name, value) => {
+        let error = '';
+
+        const stringValue = String(value || ''); switch (name) {
+            case 'full_name':
+                if (!stringValue.trim()) {
+                    error = 'Full name is required';
+                } else if (stringValue.trim().length < 2) {
+                    error = 'Full name must be at least 2 characters';
+                }
+                break;
+            case 'email':
+                if (!stringValue.trim()) {
+                    error = 'Email is required';
+                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(stringValue)) {
+                    error = 'Please enter a valid email address';
+                }
+                break;
+            case 'contact':
+                if (!stringValue.trim()) {
+                    error = 'Contact number is required';
+                } else if (!/^98\d{8}$/.test(stringValue.replace(/[\s-]/g, ''))) {
+                    error = 'Please enter a valid Nepali phone number (10 digits starting with 98)';
+                }
+                break;
+            case 'address':
+                if (!stringValue.trim()) {
+                    error = 'Address is required';
+                } else if (stringValue.trim().length < 5) {
+                    error = 'Address must be at least 5 characters';
+                }
+                break;
+            case 'city':
+                if (!stringValue.trim()) {
+                    error = 'City is required';
+                }
+                break;
+            case 'postal_code':
+                if (!stringValue.trim()) {
+                    error = 'Postal code is required';
+                }
+                break;
+            case 'country':
+                if (!stringValue.trim()) {
+                    error = 'Country is required';
+                }
+                break;
+            default:
+                break;
+        }
+
+        return error;
     };
 
     const handleChange = (e) => {
@@ -59,6 +124,12 @@ const Checkout = () => {
             ...formData,
             [name]: value,
         });
+
+        const error = validateField(name, value);
+        setErrors(prev => ({
+            ...prev,
+            [name]: error
+        }));
 
         if (name === 'country') {
             setShippingCost(calculateShippingCost(value));
@@ -75,11 +146,25 @@ const Checkout = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        const newErrors = {};
+        Object.keys(formData).forEach(key => {
+            const error = validateField(key, formData[key]);
+            if (error) {
+                newErrors[key] = error;
+            }
+        });
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            toast.error('Please fix the errors in the form');
+            return;
+        }
+
         setLoading(true);
 
         try {
-            // Validate cart items before submitting
-            const invalidItems = cartItems.filter(item => !item?.sku?.id);
+            const invalidItems = cartItems.filter(item => !item?.sku?.id && !item?.sku?.sku_code);
             if (invalidItems.length > 0) {
                 toast.error('Some items in your cart are invalid. Please remove them and try again.');
                 console.error('Invalid cart items:', invalidItems);
@@ -87,16 +172,36 @@ const Checkout = () => {
                 return;
             }
 
-            // Prepare order data
+            const orderItems = await Promise.all(cartItems.map(async (item) => {
+                if (item.sku.id) {
+                    return {
+                        sku: Number(item.sku.id),
+                        quantity_at_purchase: item.quantity,
+                    };
+                } else {
+                    try {
+                        const productResponse = await productAPI.getProduct(item.product.id);
+                        const baseSKU = productResponse.data.skus?.find(s => s.sku_code === item.sku.sku_code);
+                        if (!baseSKU || !baseSKU.id) {
+                            throw new Error(`SKU ${item.sku.sku_code} not found`);
+                        }
+                        return {
+                            sku: Number(baseSKU.id),
+                            quantity_at_purchase: item.quantity,
+                        };
+                    } catch (err) {
+                        console.error(`Failed to fetch SKU id for ${item.sku.sku_code}:`, err);
+                        throw new Error(`Invalid SKU: ${item.sku.sku_code}`);
+                    }
+                }
+            }));
+
             const orderData = {
                 ...formData,
                 total_amount: getGrandTotal() + shippingCost, // Include shipping in total if needed, but backend recalculates
                 tax: getTax(),
                 shipping_cost: shippingCost,
-                order_item: cartItems.map((item) => ({
-                    sku: Number(item.sku.id), // Backend expects integer ID
-                    quantity_at_purchase: item.quantity,
-                })),
+                order_item: orderItems,
             };
 
             console.log('Sending order data:', orderData); // Debug log
@@ -105,21 +210,16 @@ const Checkout = () => {
             const orderId = response.data.id;
 
             if (paymentMethod === 'esewa') {
-                // Construct eSewa v2 form data
                 let totalAmountVal = getGrandTotal() + shippingCost;
-                // Fix potential floating point issues
                 totalAmountVal = Math.round(totalAmountVal * 100) / 100;
 
-                // Match backend verification logic: whole numbers as integers, decimals with 2 places
                 const totalAmount = (totalAmountVal % 1 === 0)
                     ? totalAmountVal.toString()  // "1356" for whole numbers
                     : totalAmountVal.toFixed(2);  // "1356.50" for decimals
                 const transactionUuid = `${orderId}-${Date.now()}`; // Unique ID for every attempt
 
-                // Clean up any existing pending payments for this order to prevent backend conflicts
                 try {
                     const allPayments = await paymentAPI.getPayments();
-                    // Filter for pending payments for this specific order
                     const pendingPayments = allPayments.data.filter(
                         p => p.order === orderId && p.status === 'pending'
                     );
@@ -130,10 +230,8 @@ const Checkout = () => {
                     }
                 } catch (err) {
                     console.warn('Failed to cleanup old payments:', err);
-                    // Continue flow - if cleanup fails, we still try to proceed
                 }
 
-                // Create Payment record in backend first
                 await paymentAPI.createPayment({
                     order: orderId,
                     amount: totalAmount,
@@ -160,7 +258,6 @@ const Checkout = () => {
                     signature: signature,
                 };
 
-                // Create a hidden form and submit it
                 const form = document.createElement("form");
                 form.setAttribute("method", "POST");
                 form.setAttribute("action", path);
@@ -176,12 +273,10 @@ const Checkout = () => {
                 document.body.appendChild(form);
                 form.submit();
             } else {
-                // For COD, create a pending payment record as well so we can track it
                 let totalAmountVal = getGrandTotal() + shippingCost;
                 totalAmountVal = Math.round(totalAmountVal * 100) / 100;
                 const totalAmount = (totalAmountVal % 1 === 0) ? totalAmountVal.toString() : totalAmountVal.toFixed(2);
 
-                // Try to create payment record for COD (failure shouldn't block order success though)
                 try {
                     await paymentAPI.createPayment({
                         order: orderId,
@@ -239,7 +334,7 @@ const Checkout = () => {
                         <h2>Shipping Information</h2>
 
                         <form onSubmit={handleSubmit} className="checkout-form">
-                            <div className="form-group">
+                            <div className={`form-group ${errors.full_name ? 'error' : ''}`}>
                                 <label htmlFor="full_name">Full Name *</label>
                                 <input
                                     type="text"
@@ -249,9 +344,10 @@ const Checkout = () => {
                                     onChange={handleChange}
                                     required
                                 />
+                                {errors.full_name && <span className="error-message">{errors.full_name}</span>}
                             </div>
 
-                            <div className="form-group">
+                            <div className={`form-group ${errors.email ? 'error' : ''}`}>
                                 <label htmlFor="email">Email *</label>
                                 <input
                                     type="email"
@@ -261,21 +357,23 @@ const Checkout = () => {
                                     onChange={handleChange}
                                     required
                                 />
+                                {errors.email && <span className="error-message">{errors.email}</span>}
                             </div>
 
-                            <div className="form-group">
+                            <div className={`form-group ${errors.contact ? 'error' : ''}`}>
                                 <label htmlFor="contact">Contact Number *</label>
                                 <input
-                                    type="number"
+                                    type="text"
                                     id="contact"
                                     name="contact"
                                     value={formData.contact || ''}
                                     onChange={handleChange}
                                     required
                                 />
+                                {errors.contact && <span className="error-message">{errors.contact}</span>}
                             </div>
 
-                            <div className="form-group">
+                            <div className={`form-group ${errors.address ? 'error' : ''}`}>
                                 <label htmlFor="address">Address *</label>
                                 <input
                                     type="text"
@@ -285,10 +383,11 @@ const Checkout = () => {
                                     onChange={handleChange}
                                     required
                                 />
+                                {errors.address && <span className="error-message">{errors.address}</span>}
                             </div>
 
                             <div className="form-row">
-                                <div className="form-group">
+                                <div className={`form-group ${errors.city ? 'error' : ''}`}>
                                     <label htmlFor="city">City *</label>
                                     <input
                                         type="text"
@@ -298,9 +397,10 @@ const Checkout = () => {
                                         onChange={handleChange}
                                         required
                                     />
+                                    {errors.city && <span className="error-message">{errors.city}</span>}
                                 </div>
 
-                                <div className="form-group">
+                                <div className={`form-group ${errors.postal_code ? 'error' : ''}`}>
                                     <label htmlFor="postal_code">Postal Code *</label>
                                     <input
                                         type="text"
@@ -310,6 +410,7 @@ const Checkout = () => {
                                         onChange={handleChange}
                                         required
                                     />
+                                    {errors.postal_code && <span className="error-message">{errors.postal_code}</span>}
                                 </div>
                             </div>
 
@@ -372,16 +473,29 @@ const Checkout = () => {
                     <div className="order-summary-section">
                         <h2>Order Summary</h2>
 
+                        {hasMultipleSellers() && (
+                            <div className="multi-seller-notice">
+                                <p>ℹ️ This order contains products from multiple sellers</p>
+                            </div>
+                        )}
+
                         <div className="summary-items">
-                            {cartItems.map((item) => (
-                                <div key={item?.sku?.sku_code || Math.random()} className="summary-item">
-                                    <div className="item-info">
-                                        <span className="item-name">{item?.product?.name || 'Unknown Product'}</span>
-                                        <span className="item-qty">x{item?.quantity || 0}</span>
+                            {Object.entries(getSellerGroups()).map(([seller, items]) => (
+                                <div key={seller} className="seller-group-summary">
+                                    <div className="seller-label">
+                                        <strong>Seller: {seller}</strong>
                                     </div>
-                                    <span className="item-price">
-                                        ${(Number(item?.sku?.price || 0) * (item?.quantity || 0)).toFixed(2)}
-                                    </span>
+                                    {items.map((item) => (
+                                        <div key={item?.sku?.sku_code || Math.random()} className="summary-item">
+                                            <div className="item-info">
+                                                <span className="item-name">{item?.product?.name || 'Unknown Product'}</span>
+                                                <span className="item-qty">x{item?.quantity || 0}</span>
+                                            </div>
+                                            <span className="item-price">
+                                                {formatPrice(Number(item?.sku?.price || 0) * (item?.quantity || 0))}
+                                            </span>
+                                        </div>
+                                    ))}
                                 </div>
                             ))}
                         </div>
@@ -389,22 +503,22 @@ const Checkout = () => {
                         <div className="summary-totals">
                             <div className="summary-row">
                                 <span>Subtotal:</span>
-                                <span>${(getCartTotal() || 0).toFixed(2)}</span>
+                                <span>{formatPrice(getCartTotal() || 0)}</span>
                             </div>
 
                             <div className="summary-row">
                                 <span>Tax (13%):</span>
-                                <span>${(getTax() || 0).toFixed(2)}</span>
+                                <span>{formatPrice(getTax() || 0)}</span>
                             </div>
 
                             <div className="summary-row">
                                 <span>Shipping:</span>
-                                <span>{shippingCost === 0 ? 'Free' : `$${shippingCost.toFixed(2)}`}</span>
+                                <span>{formatPrice(shippingCost)}</span>
                             </div>
 
                             <div className="summary-row total">
                                 <span>Total:</span>
-                                <span>${((getGrandTotal() || 0) + shippingCost).toFixed(2)}</span>
+                                <span>{formatPrice((getGrandTotal() || 0) + shippingCost)}</span>
                             </div>
                         </div>
                     </div>

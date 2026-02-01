@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { orderAPI, productAPI } from '../../services/api';
 import { toast } from 'react-toastify';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { formatPrice } from '../../utils/currency';
 
 const OrderManagement = () => {
     const [orders, setOrders] = useState([]);
@@ -132,7 +133,7 @@ const OrderManagement = () => {
                                                             <span className="item-sku-small">SKU: {details.sku_code}</span>
                                                         </div>
                                                         <span>Qty: {item.quantity_at_purchase}</span>
-                                                        <span>${Number(item.price_at_purchase).toFixed(2)}</span>
+                                                        <span>{formatPrice(item.price_at_purchase)}</span>
                                                     </div>
                                                 );
                                             })}

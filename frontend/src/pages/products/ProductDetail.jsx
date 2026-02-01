@@ -7,6 +7,7 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorMessage from '../../components/common/ErrorMessage';
 import { toast } from 'react-toastify';
 import ReviewList from '../../components/reviews/ReviewList';
+import { formatPrice } from '../../utils/currency';
 
 const ProductDetail = () => {
     const { id } = useParams();
@@ -29,7 +30,6 @@ const ProductDetail = () => {
             const response = await productAPI.getProduct(id);
             setProduct(response.data);
 
-            // Auto-select first SKU if available
             if (response.data.skus && response.data.skus.length > 0) {
                 setSelectedSKU(response.data.skus[0]);
             }
@@ -93,7 +93,7 @@ const ProductDetail = () => {
                     <div className="product-info-section">
                         <h1 className="product-title">{product.name}</h1>
 
-                        {/* Average Rating Display */}
+                        {}
                         {product.reviews && product.reviews.length > 0 && (
                             <div className="product-average-rating">
                                 <div className="rating-stars-large">
@@ -127,7 +127,7 @@ const ProductDetail = () => {
                         </div>
 
                         <div className="product-price">
-                            <span className="price">${Number(currentPrice).toFixed(2)}</span>
+                            <span className="price">{formatPrice(currentPrice)}</span>
                         </div>
 
                         <div className="stock-info">
@@ -177,7 +177,7 @@ const ProductDetail = () => {
                                                         ))}
                                                     </div>
                                                 )}
-                                                <span className="sku-price">${Number(sku.price).toFixed(2)}</span>
+                                                <span className="sku-price">{formatPrice(sku.price)}</span>
                                                 <span className="sku-stock">Stock: {sku.stock}</span>
                                             </div>
                                         </button>

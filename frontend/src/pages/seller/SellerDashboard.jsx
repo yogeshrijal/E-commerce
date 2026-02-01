@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { productAPI } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { formatPrice } from '../../utils/currency';
 
 const SellerDashboard = () => {
     const { user } = useAuth();
@@ -15,8 +16,6 @@ const SellerDashboard = () => {
     const fetchSellerProducts = async () => {
         try {
             const response = await productAPI.getProducts();
-            // Filter products created by this seller
-            // Backend returns created_by as "username (role)"
             const sellerProducts = response.data.filter(
                 (p) => p.created_by && p.created_by.includes(user.username)
             );
@@ -116,7 +115,7 @@ const SellerDashboard = () => {
                                         <tr key={product.id}>
                                             <td>{product.name}</td>
                                             <td>{product.category}</td>
-                                            <td>${Number(product.base_price).toFixed(2)}</td>
+                                            <td>{formatPrice(product.base_price)}</td>
                                             <td>{product.stock}</td>
                                             <td>
                                                 <span className={`status-badge ${product.is_active ? 'active' : 'inactive'}`}>

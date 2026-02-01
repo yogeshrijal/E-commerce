@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { orderAPI, productAPI } from '../../services/api';
 import { toast } from 'react-toastify';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { formatPrice } from '../../utils/currency';
 
 const SellerOrders = () => {
     const [orders, setOrders] = useState([]);
@@ -69,7 +70,6 @@ const SellerOrders = () => {
         ? orders.filter((order) => order.status === filterStatus)
         : orders;
 
-    // Sellers can only move forward: pending -> processing -> shipped
     const getNextStatus = (currentStatus) => {
         const flow = ['pending', 'processing', 'shipped'];
         const currentIndex = flow.indexOf(currentStatus);
@@ -143,7 +143,7 @@ const SellerOrders = () => {
                                                             <span className="item-sku-small">SKU: {details.sku_code}</span>
                                                         </div>
                                                         <span>Qty: {item.quantity_at_purchase}</span>
-                                                        <span>${Number(item.price_at_purchase).toFixed(2)}</span>
+                                                        <span>{formatPrice(item.price_at_purchase)}</span>
                                                     </div>
                                                 );
                                             })}
@@ -152,7 +152,7 @@ const SellerOrders = () => {
                                         <div className="order-section">
                                             <h4>Update Status</h4>
                                             <div className="status-buttons">
-                                                {/* Show current status as active/disabled */}
+                                                {}
                                                 <button
                                                     className={`status-btn active`}
                                                     disabled
@@ -160,7 +160,7 @@ const SellerOrders = () => {
                                                     Current: {order.status}
                                                 </button>
 
-                                                {/* Show next available status if any */}
+                                                {}
                                                 {getNextStatus(order.status) && (
                                                     <button
                                                         onClick={() => handleStatusUpdate(order.id, getNextStatus(order.status))}
@@ -170,7 +170,7 @@ const SellerOrders = () => {
                                                     </button>
                                                 )}
 
-                                                {/* Cancel Button for Sellers */}
+                                                {}
                                                 {['pending', 'processing'].includes(order.status) && (
                                                     <button
                                                         onClick={() => {

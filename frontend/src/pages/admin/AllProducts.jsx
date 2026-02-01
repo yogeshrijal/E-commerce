@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { productAPI } from '../../services/api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { formatPrice } from '../../utils/currency';
 
 const AllProducts = () => {
     const [products, setProducts] = useState([]);
@@ -71,7 +72,7 @@ const AllProducts = () => {
                                         <td>{product.name}</td>
                                         <td>{product.category}</td>
                                         <td>{product.created_by}</td>
-                                        <td>${Number(product.base_price).toFixed(2)}</td>
+                                        <td>{formatPrice(product.base_price)}</td>
                                         <td>{product.stock}</td>
                                         <td>
                                             <span className={`status-badge ${product.is_active ? 'active' : 'inactive'}`}>

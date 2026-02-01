@@ -1,17 +1,18 @@
 import { Link } from 'react-router-dom';
+import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
+import { toast } from 'react-toastify';
+import { formatPrice } from '../../utils/currency';
 
 const ProductCard = ({ product }) => {
     const imageUrl = product.image || '/placeholder-product.png';
 
 
-    // Calculate average rating and review count
     const avgRating = product.avg_rating ? Number(product.avg_rating) : 0;
-    // Safely handle missing review_count or reviews array
     const reviewCount = product.review_count || product.reviews?.length || 0;
     const hasRatings = avgRating > 0;
 
 
-    // Helper to render stars
     const renderStars = (rating) => {
         const fullStars = Math.floor(rating);
         const hasHalfStar = rating % 1 >= 0.5;
@@ -38,7 +39,7 @@ const ProductCard = ({ product }) => {
                 <h3 className="product-name">{product.name}</h3>
                 <p className="product-category">{product.category}</p>
 
-                {/* Rating Display */}
+                { }
                 {hasRatings ? (
                     <div className="product-rating">
                         {renderStars(avgRating)}
@@ -53,11 +54,17 @@ const ProductCard = ({ product }) => {
                 )}
 
                 <div className="product-footer">
-                    <span className="product-price">${Number(product.base_price).toFixed(2)}</span>
+                    <span className="product-price">{formatPrice(product.base_price)}</span>
                     {product.stock > 0 && product.stock < 10 && (
                         <span className="low-stock">Only {product.stock} left</span>
                     )}
                 </div>
+
+                {product.created_by && (
+                    <div className="product-seller">
+                        <span className="seller-label">Seller: {product.created_by}</span>
+                    </div>
+                )}
             </div>
         </Link>
     );

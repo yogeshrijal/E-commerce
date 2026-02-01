@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { orderAPI, productAPI } from '../../services/api';
+import { orderAPI } from '../../services/api';
+import { useAuth } from '../../context/AuthContext';
+import { toast } from 'react-toastify';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorMessage from '../../components/common/ErrorMessage';
+import { formatPrice } from '../../utils/currency';
 
 const OrderHistory = () => {
     const [orders, setOrders] = useState([]);
-    const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
@@ -17,45 +19,8 @@ const OrderHistory = () => {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [ordersRes, productsRes] = await Promise.all([
-                orderAPI.getOrders(),
-                productAPI.getProducts()
-            ]);
-
-            let fetchedOrders = ordersRes.data;
-            const STALE_THRESHOLD_MS = 10 * 60 * 1000; // 10 minutes
-            const now = Date.now();
-            const ordersToCancel = [];
-
-            // Check for stale pending orders
-            // fetchedOrders.forEach(order => {
-            //     if (order.status === 'pending') {
-            //         const createdTime = new Date(order.created_at).getTime();
-            //         if (now - createdTime > STALE_THRESHOLD_MS) {
-            //             ordersToCancel.push(order.id);
-            //         }
-            //     }
-            // });
-
-            // Cancel stale orders
-            // if (ordersToCancel.length > 0) {
-            //     await Promise.all(ordersToCancel.map(id =>
-            //         orderAPI.updateOrder(id, { status: 'canceled' })
-            //     ));
-
-            //     // Update local state to reflect cancellation
-            //     fetchedOrders = fetchedOrders.map(order =>
-            //         ordersToCancel.includes(order.id)
-            //             ? { ...order, status: 'canceled' }
-            //             : order
-            //     );
-
-            //     // Optional: Notify user
-            //     // toast.info(`${ordersToCancel.length} incomplete order(s) were canceled.`);
-            // }
-
-            setOrders(fetchedOrders);
-            setProducts(productsRes.data);
+            const ordersRes = await orderAPI.getOrders();
+            setOrders(ordersRes.data);
             setError(null);
         } catch (err) {
             setError('Failed to load orders');
@@ -66,22 +31,9 @@ const OrderHistory = () => {
     };
 
     const getProductNames = (orderItems) => {
-        if (!orderItems || orderItems.length === 0) return '';
+        if (!orderItems || orderItems.length === 0) return 'No items';
 
-        const names = orderItems.map(item => {
-            // Find product that has this SKU
-            for (const product of products) {
-                const foundSku = product.skus.find(s => s.id === item.sku || s.sku_code === item.sku);
-                if (foundSku) {
-                    return product.name;
-                }
-            }
-            return 'Unknown Product';
-        });
-
-        // Unique names only
-        const uniqueNames = [...new Set(names)];
-        return uniqueNames.join(', ');
+        return `${orderItems.length} item${orderItems.length > 1 ? 's' : ''}`;
     };
 
     const getStatusClass = (status) => {
@@ -131,7 +83,7 @@ const OrderHistory = () => {
                                     </div>
                                     <div className="order-total">
                                         <span className="total-label">Total:</span>
-                                        <span className="total-amount">${Number(order.total_amount).toFixed(2)}</span>
+                                        <span className="total-amount">{formatPrice(order.total_amount)}</span>
                                     </div>
                                 </div>
 

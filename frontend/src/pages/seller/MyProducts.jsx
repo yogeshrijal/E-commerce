@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-toastify';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import './MyProducts.css';
+import { formatPrice } from '../../utils/currency';
 
 const MyProducts = () => {
     const { user } = useAuth();
@@ -22,7 +23,6 @@ const MyProducts = () => {
         try {
             setLoading(true);
             const response = await productAPI.getProducts();
-            // Backend returns created_by as "username (role)", so we need to check if it includes the username
             const sellerProducts = response.data.filter(
                 (p) => p.created_by && p.created_by.includes(user.username)
             );
@@ -35,7 +35,6 @@ const MyProducts = () => {
         }
     };
 
-    // Extract unique categories from products
     const categories = [...new Set(products.map(p => p.category))].filter(Boolean).sort();
 
     const handleDelete = async (id) => {
@@ -66,7 +65,6 @@ const MyProducts = () => {
                 is_active: !currentStatus,
             });
 
-            // Update local state
             setProducts(products.map(p =>
                 p.id === id ? { ...p, is_active: !currentStatus } : p
             ));
@@ -196,7 +194,7 @@ const MyProducts = () => {
                                         </td>
                                         <td>{product.name}</td>
                                         <td>{product.category}</td>
-                                        <td>${Number(product.base_price).toFixed(2)}</td>
+                                        <td>{formatPrice(product.base_price)}</td>
                                         <td>{product.stock}</td>
                                         <td>{product.skus?.length || 0}</td>
                                         <td>

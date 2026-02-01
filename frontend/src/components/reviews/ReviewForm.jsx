@@ -23,13 +23,11 @@ const ReviewForm = ({ productId, orderId, skuId, onReviewAdded, onCancel, initia
 
             let response;
             if (initialData) {
-                // Update existing review
                 response = await reviewAPI.updateReview(initialData.id, {
                     rating,
                     comment
                 });
             } else {
-                // Create new review
                 response = await reviewAPI.createReview({
                     product: productId,
                     rating,

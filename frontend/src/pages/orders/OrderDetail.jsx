@@ -5,6 +5,7 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorMessage from '../../components/common/ErrorMessage';
 import ReviewForm from '../../components/reviews/ReviewForm';
 import { toast } from 'react-toastify';
+import { formatPrice } from '../../utils/currency';
 
 const OrderDetail = () => {
     const { id } = useParams();
@@ -13,7 +14,6 @@ const OrderDetail = () => {
     const [error, setError] = useState(null);
     const [products, setProducts] = useState([]);
 
-    // Review Modal State
     const [reviewModalOpen, setReviewModalOpen] = useState(false);
     const [selectedItemForReview, setSelectedItemForReview] = useState(null);
 
@@ -39,10 +39,6 @@ const OrderDetail = () => {
     }, [id]);
 
     const getProductDetails = (skuId) => {
-        // skuId might be an ID or a code depending on backend response, 
-        // but usually in OrderItem it's the ID or the string representation.
-        // Based on serializers, it seems to be the ID or object if nested.
-        // Let's assume it's an ID first.
 
         for (const product of products) {
             const foundSku = product.skus.find(s => s.id === skuId || s.sku_code === skuId);
@@ -55,7 +51,6 @@ const OrderDetail = () => {
                 };
             }
         }
-        // Fallback if we can't find it (maybe deleted product)
         return { name: 'Unknown Product', image: null, sku_code: skuId, productId: null };
     };
 
@@ -141,9 +136,9 @@ const OrderDetail = () => {
                                                 <p className="item-quantity">Quantity: {item.quantity_at_purchase}</p>
                                             </div>
                                             <div className="item-pricing">
-                                                <p className="item-price">${Number(item.price_at_purchase).toFixed(2)} each</p>
+                                                <p className="item-price">{formatPrice(item.price_at_purchase)} each</p>
                                                 <p className="item-total">
-                                                    ${(Number(item.price_at_purchase) * item.quantity_at_purchase).toFixed(2)}
+                                                    {formatPrice(Number(item.price_at_purchase) * item.quantity_at_purchase)}
                                                 </p>
                                                 {order.status === 'delivered' && (
                                                     <button
@@ -161,7 +156,7 @@ const OrderDetail = () => {
                             </div>
                         </div>
 
-                        {/* Cancel Order Button */}
+                        {}
                         {['pending', 'processing'].includes(order.status) && (
                             <div className="order-actions">
                                 <button
@@ -171,12 +166,9 @@ const OrderDetail = () => {
                                             try {
                                                 setLoading(true);
                                                 await orderAPI.updateOrder(order.id, { status: 'canceled' });
-                                                // Refresh order details
-                                                // fetchOrder(); // This function is not defined in the original code, need to fix
                                                 window.location.reload();
                                             } catch (err) {
                                                 console.error(err);
-                                                // Error is handled by global toast or we can add specific handling here
                                                 alert('your order is cancelled');
                                             } finally {
                                                 setLoading(false);
@@ -241,27 +233,27 @@ const OrderDetail = () => {
                             <div className="summary-row">
                                 <span>Subtotal:</span>
                                 <span>
-                                    ${(Number(order.total_amount) - Number(order.tax) - Number(order.shipping_cost)).toFixed(2)}
+                                    {formatPrice(Number(order.total_amount) - Number(order.tax) - Number(order.shipping_cost))}
                                 </span>
                             </div>
                             <div className="summary-row">
                                 <span>Tax:</span>
-                                <span>${Number(order.tax).toFixed(2)}</span>
+                                <span>{formatPrice(order.tax)}</span>
                             </div>
                             <div className="summary-row">
                                 <span>Shipping:</span>
-                                <span>${Number(order.shipping_cost).toFixed(2)}</span>
+                                <span>{formatPrice(order.shipping_cost)}</span>
                             </div>
                             <div className="summary-row total">
                                 <span>Total:</span>
-                                <span>${Number(order.total_amount).toFixed(2)}</span>
+                                <span>{formatPrice(order.total_amount)}</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Review Modal */}
+            {}
             {reviewModalOpen && selectedItemForReview && (
                 <div className="modal-overlay">
                     <div className="modal-content">

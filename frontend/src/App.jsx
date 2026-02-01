@@ -9,11 +9,12 @@ import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import ProtectedRoute from './components/common/ProtectedRoute';
 
-// Pages
 import Home from './pages/Home';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Profile from './pages/auth/Profile';
+import ForgotPassword from './pages/auth/ForgotPassword';
+import ResetPassword from './pages/auth/ResetPassword';
 
 import ProductList from './pages/products/ProductList';
 import ProductDetail from './pages/products/ProductDetail';
@@ -48,14 +49,16 @@ function App() {
               <Navbar />
               <main className="main-content">
                 <Routes>
-                  {/* Public Routes */}
+                  {}
                   <Route path="/" element={<Home />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/products" element={<ProductList />} />
                   <Route path="/products/:id" element={<ProductDetail />} />
 
-                  {/* Protected Routes */}
+                  {}
                   <Route
                     path="/profile"
                     element={
@@ -65,7 +68,7 @@ function App() {
                     }
                   />
 
-                  {/* Customer Routes */}
+                  {}
                   <Route
                     path="/cart"
                     element={
@@ -115,7 +118,7 @@ function App() {
                     }
                   />
 
-                  {/* Seller Routes */}
+                  {}
                   <Route
                     path="/seller/dashboard"
                     element={
@@ -157,7 +160,7 @@ function App() {
                     }
                   />
 
-                  {/* Admin Routes */}
+                  {}
                   <Route
                     path="/admin/dashboard"
                     element={

@@ -25,7 +25,6 @@ const Login = () => {
         try {
             const user = await login(formData.username, formData.password);
 
-            // Redirect based on role
             if (user.role === 'admin') {
                 navigate('/admin/dashboard');
             } else if (user.role === 'seller') {
@@ -72,6 +71,15 @@ const Login = () => {
                                 required
                                 placeholder="Enter your password"
                             />
+                            <div style={{ marginTop: '0.5rem', textAlign: 'right' }}>
+                                <Link to="/forgot-password" style={{
+                                    fontSize: '0.9rem',
+                                    color: 'var(--primary-color)',
+                                    textDecoration: 'none'
+                                }}>
+                                    Forgot Password?
+                                </Link>
+                            </div>
                         </div>
 
                         <button type="submit" className="btn btn-primary btn-block" disabled={loading}>

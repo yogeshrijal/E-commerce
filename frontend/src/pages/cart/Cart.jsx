@@ -1,9 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
+import { formatPrice } from '../../utils/currency';
 
 const Cart = () => {
-    const { cartItems, removeFromCart, updateQuantity, getCartTotal, getTax, getGrandTotal } = useCart();
+    const { cartItems, removeFromCart, updateQuantity, getCartTotal, getTax, getGrandTotal, getSellerGroups, hasMultipleSellers } = useCart();
     const { isAuthenticated } = useAuth();
     const navigate = useNavigate();
 
@@ -41,68 +42,83 @@ const Cart = () => {
 
                 <div className="cart-layout">
                     <div className="cart-items">
-                        {cartItems.map((item) => (
-                            <div key={item.sku.sku_code} className="cart-item">
-                                <div className="item-image">
-                                    {item.product.image ? (
-                                        <img src={item.product.image} alt={item.product.name} />
-                                    ) : (
-                                        <div className="no-image">No image</div>
-                                    )}
+                        {hasMultipleSellers() && (
+                            <div className="multi-seller-notice">
+                                <p>ℹ️ Your cart contains products from multiple sellers. They will be included in a single order.</p>
+                            </div>
+                        )}
+
+                        {Object.entries(getSellerGroups()).map(([seller, items]) => (
+                            <div key={seller} className="seller-group">
+                                <div className="seller-header">
+                                    <h3>Sold by: {seller}</h3>
+                                    <span className="item-count">{items.length} item{items.length > 1 ? 's' : ''}</span>
                                 </div>
 
-                                <div className="item-details">
-                                    <h3>{item.product.name}</h3>
-                                    <p className="item-sku">SKU: {item.sku.sku_code}</p>
-                                    {item.sku.sku_attribute && item.sku.sku_attribute.length > 0 && (
-                                        <div className="item-attributes">
-                                            {item.sku.sku_attribute.map((attr, idx) => (
-                                                <span key={idx} className="attribute-tag">
-                                                    {attr.attribute}: {attr.value}
-                                                </span>
-                                            ))}
+                                {items.map((item) => (
+                                    <div key={item.sku.sku_code} className="cart-item">
+                                        <div className="item-image">
+                                            {item.product.image ? (
+                                                <img src={item.product.image} alt={item.product.name} />
+                                            ) : (
+                                                <div className="no-image">No image</div>
+                                            )}
                                         </div>
-                                    )}
-                                </div>
 
-                                <div className="item-price">
-                                    ${Number(item.sku.price).toFixed(2)}
-                                </div>
+                                        <div className="item-details">
+                                            <h3>{item.product.name}</h3>
+                                            <p className="item-sku">SKU: {item.sku.sku_code}</p>
+                                            {item.sku.sku_attribute && item.sku.sku_attribute.length > 0 && (
+                                                <div className="item-attributes">
+                                                    {item.sku.sku_attribute.map((attr, idx) => (
+                                                        <span key={idx} className="attribute-tag">
+                                                            {attr.attribute}: {attr.value}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
 
-                                <div className="item-quantity">
-                                    <button
-                                        onClick={() => updateQuantity(item.sku.sku_code, item.quantity - 1)}
-                                        className="qty-btn"
-                                    >
-                                        -
-                                    </button>
-                                    <input
-                                        type="number"
-                                        value={item.quantity}
-                                        onChange={(e) => updateQuantity(item.sku.sku_code, parseInt(e.target.value) || 1)}
-                                        min="1"
-                                        max={item.sku.stock}
-                                    />
-                                    <button
-                                        onClick={() => updateQuantity(item.sku.sku_code, item.quantity + 1)}
-                                        className="qty-btn"
-                                        disabled={item.quantity >= item.sku.stock}
-                                    >
-                                        +
-                                    </button>
-                                </div>
+                                        <div className="item-price">
+                                            {formatPrice(item.sku.price)}
+                                        </div>
 
-                                <div className="item-total">
-                                    ${(Number(item.sku.price) * item.quantity).toFixed(2)}
-                                </div>
+                                        <div className="item-quantity">
+                                            <button
+                                                onClick={() => updateQuantity(item.sku.sku_code, item.quantity - 1)}
+                                                className="qty-btn"
+                                            >
+                                                -
+                                            </button>
+                                            <input
+                                                type="number"
+                                                value={item.quantity}
+                                                onChange={(e) => updateQuantity(item.sku.sku_code, parseInt(e.target.value) || 1)}
+                                                min="1"
+                                                max={item.sku.stock}
+                                            />
+                                            <button
+                                                onClick={() => updateQuantity(item.sku.sku_code, item.quantity + 1)}
+                                                className="qty-btn"
+                                                disabled={item.quantity >= item.sku.stock}
+                                            >
+                                                +
+                                            </button>
+                                        </div>
 
-                                <button
-                                    onClick={() => removeFromCart(item.sku.sku_code)}
-                                    className="remove-btn"
-                                    aria-label="Remove item"
-                                >
-                                    ✕
-                                </button>
+                                        <div className="item-total">
+                                            {formatPrice(Number(item.sku.price) * item.quantity)}
+                                        </div>
+
+                                        <button
+                                            onClick={() => removeFromCart(item.sku.sku_code)}
+                                            className="remove-btn"
+                                            aria-label="Remove item"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                ))}
                             </div>
                         ))}
                     </div>
@@ -112,17 +128,17 @@ const Cart = () => {
 
                         <div className="summary-row">
                             <span>Subtotal:</span>
-                            <span>${getCartTotal().toFixed(2)}</span>
+                            <span>{formatPrice(getCartTotal())}</span>
                         </div>
 
                         <div className="summary-row">
                             <span>Tax (13%):</span>
-                            <span>${getTax().toFixed(2)}</span>
+                            <span>{formatPrice(getTax())}</span>
                         </div>
 
                         <div className="summary-row total">
                             <span>Total:</span>
-                            <span>${getGrandTotal().toFixed(2)}</span>
+                            <span>{formatPrice(getGrandTotal())}</span>
                         </div>
 
                         <button

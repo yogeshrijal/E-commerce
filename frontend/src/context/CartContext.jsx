@@ -23,7 +23,6 @@ export const CartProvider = ({ children }) => {
     });
 
     useEffect(() => {
-        // Save cart to localStorage whenever it changes
         localStorage.setItem('cart', JSON.stringify(cartItems));
     }, [cartItems]);
 
@@ -33,13 +32,11 @@ export const CartProvider = ({ children }) => {
         );
 
         if (existingItemIndex > -1) {
-            // Update quantity if item already exists
             const updatedCart = [...cartItems];
             updatedCart[existingItemIndex].quantity += quantity;
             setCartItems(updatedCart);
             toast.success('Cart updated!');
         } else {
-            // Add new item
             setCartItems([
                 ...cartItems,
                 {
@@ -92,6 +89,23 @@ export const CartProvider = ({ children }) => {
         return getCartTotal() + getTax();
     };
 
+    const getSellerGroups = () => {
+        const groups = {};
+        cartItems.forEach(item => {
+            const seller = item.product?.created_by || 'Unknown Seller';
+            if (!groups[seller]) {
+                groups[seller] = [];
+            }
+            groups[seller].push(item);
+        });
+        return groups;
+    };
+
+    const hasMultipleSellers = () => {
+        const sellers = new Set(cartItems.map(item => item.product?.created_by));
+        return sellers.size > 1;
+    };
+
     const value = {
         cartItems,
         addToCart,
@@ -102,6 +116,8 @@ export const CartProvider = ({ children }) => {
         getCartCount,
         getTax,
         getGrandTotal,
+        getSellerGroups,
+        hasMultipleSellers,
     };
 
     return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

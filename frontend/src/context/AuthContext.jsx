@@ -17,7 +17,6 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check if user is logged in on mount
         const storedUser = localStorage.getItem('user');
         const token = localStorage.getItem('access_token');
 
@@ -32,14 +31,11 @@ export const AuthProvider = ({ children }) => {
             const response = await authAPI.login({ username, password });
             const { access, refresh } = response.data;
 
-            // Store tokens
             localStorage.setItem('access_token', access);
             localStorage.setItem('refresh_token', refresh);
 
-            // Decode token to get user info (simple base64 decode)
             const payload = JSON.parse(atob(access.split('.')[1]));
 
-            // Fetch full user details
             const userResponse = await userAPI.getUser(payload.user_id);
             const userData = userResponse.data;
 
@@ -59,7 +55,6 @@ export const AuthProvider = ({ children }) => {
         try {
             const response = await authAPI.register(userData);
 
-            // Auto-login after registration
             await login(userData.username, userData.password);
 
             toast.success('Registration successful!');

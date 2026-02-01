@@ -25,7 +25,6 @@ const ProductForm = () => {
         { sku_code: '', price: '', stock: '', image: null, sku_attribute: [{ attribute: '', value: '' }] },
     ]);
     
-    // Store original SKU data to detect actual changes
     const originalSkus = useRef(null);
 
     useEffect(() => {
@@ -77,7 +76,6 @@ const ProductForm = () => {
                 }));
                 setSkus(loadedSkus);
                 
-                // Store deep copy of original SKU data for comparison
                 originalSkus.current = JSON.parse(JSON.stringify(loadedSkus));
             }
         } catch (error) {
@@ -88,21 +86,17 @@ const ProductForm = () => {
         }
     };
 
-    // Helper function to check if SKUs have actually changed
     const haveSkusChanged = () => {
         if (!originalSkus.current) return true; // New product
         
-        // Check if SKU count changed
         if (skus.length !== originalSkus.current.length) {
             return true;
         }
 
-        // Check each SKU for changes
         for (let i = 0; i < skus.length; i++) {
             const current = skus[i];
             const original = originalSkus.current[i];
 
-            // Check basic fields
             if (
                 current.sku_code !== original.sku_code ||
                 String(current.price) !== String(original.price) ||
@@ -112,12 +106,10 @@ const ProductForm = () => {
                 return true;
             }
 
-            // Check attributes count
             if (current.sku_attribute.length !== original.sku_attribute.length) {
                 return true;
             }
 
-            // Check each attribute
             for (let j = 0; j < current.sku_attribute.length; j++) {
                 if (
                     current.sku_attribute[j].attribute !== original.sku_attribute[j].attribute ||
@@ -197,7 +189,6 @@ const ProductForm = () => {
         setLoading(true);
 
         try {
-            // Validate image size if present
             if (formData.image && formData.image.size > 10 * 1024 * 1024) {
                 toast.error('Image size must be less than 10MB. Please compress your image.');
                 setLoading(false);
@@ -214,7 +205,6 @@ const ProductForm = () => {
                 specs: specs.filter((s) => s.attribute && s.value),
             };
 
-            // Check if SKUs actually changed before including them
             const skusChanged = haveSkusChanged();
             
             if (skusChanged) {

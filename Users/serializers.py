@@ -48,10 +48,35 @@ class  PasswordResetTokenSerializers(ModelSerializer):
             user=user_instance,
             token=token_string
         )
-        reset_link = f"http://127.0.0.1:8000/reset-password-confirm/?token={token_string}"
+        reset_link = f"http://localhost:5173/reset-password?token={token_string}"
+        
+        # Create detailed email message
+        email_message = f"""
+Hello,
+
+You recently requested to reset your password for your EMarket account. Click the link below to reset it:
+
+{reset_link}
+
+This password reset link will expire in 1 hour for security reasons.
+
+If you did not request a password reset, please ignore this email or contact support if you have concerns. Your password will remain unchanged.
+
+For your security:
+- Never share your password with anyone
+- Use a strong password with a mix of letters, numbers, and symbols
+- Don't reuse passwords from other websites
+
+Thank you,
+The EMarket Team
+
+---
+This is an automated message, please do not reply to this email.
+"""
+        
         send_mail(
-            subject="Password Reset Request",
-            message=f"Click the link below to reset your password:\n\n{reset_link}",
+            subject="Password Reset Request - EMarket",
+            message=email_message,
             from_email=settings.EMAIL_HOST_USER,
             recipient_list=[email_data],
             fail_silently=False,

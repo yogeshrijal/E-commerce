@@ -18,35 +18,22 @@ const PaymentFailure = () => {
             }
 
             try {
-                // Fetch order details to check payment method
                 const response = await orderAPI.getOrder(oid);
                 const order = response.data;
 
-                // Check if there is a COD payment record or if the order is marked as COD derived from some other logic
-                // Since we now create payment records for COD, we can check that.
-                // Or checking if ANY successful/pending payment exists that IS COD.
 
                 const payments = order.payment_details || [];
                 const isCOD = payments.some(p => p.method === 'cod');
-                // Added safety: If no payment record exists, do NOT auto-cancel. 
-                // It might be a COD order where payment record creation failed or lagged.
-                // We only auto-cancel if we strongly suspect it was an abandoned/failed online payment (which usually has a pending record).
                 const hasNoPayments = payments.length === 0;
 
-                // User Requirement: 
-                // - If eSewa failed -> Auto Cancel
-                // - If COD -> Do NOT Cancel, just redirect to order detail (it's pending)
 
                 if (isCOD || hasNoPayments) {
                     console.log('Order is COD or has no payment info. Preventing auto-cancellation.');
                     if (isCOD) toast.info('Order placed via Cash on Delivery.');
-                    // Redirect to order detail to let them handle/retry or view status
                     navigate(`/orders/${oid}`);
                     return;
                 }
 
-                // If not COD, and purely online payment pending/failed:
-                // Restore auto-cancellation for eSewa
                 console.log('Online payment failed. Auto-canceling order...');
                 await orderAPI.updateOrder(oid, { status: 'canceled' });
                 toast.error('Order canceled due to payment failure.');
@@ -62,7 +49,6 @@ const PaymentFailure = () => {
         checkAndHandleOrder();
     }, [oid, navigate]);
 
-    // Switch to COD logic (for failed eSewa orders)
     const handleSwitchToCOD = async () => {
         if (!oid) return;
         setLoading(true);
@@ -74,12 +60,8 @@ const PaymentFailure = () => {
 
             await Promise.all(pendingPayments.map(p => paymentAPI.deletePayment(p.id)));
 
-            // Re-activate order if it was canceled
             await orderAPI.updateOrder(oid, { status: 'pending' });
 
-            // Create COD payment record? Maybe, but strictly we just need to redirect.
-            // But let's create it for consistency if we want.
-            // For now, simpler is better: assume switching implies successful "placement" of COD order
             await paymentAPI.createPayment({
                 order: oid,
                 amount: '0.00', // Amount doesn't matter for pending COD re-creation here, or fetch from order
