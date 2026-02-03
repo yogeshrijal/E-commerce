@@ -31,6 +31,7 @@ import SellerDashboard from './pages/seller/SellerDashboard';
 import MyProducts from './pages/seller/MyProducts';
 import ProductForm from './pages/seller/ProductForm';
 import SellerOrders from './pages/seller/SellerOrders';
+import PublicSellerProfile from './pages/seller/PublicSellerProfile';
 
 import AdminDashboard from './pages/admin/AdminDashboard';
 import CategoryManagement from './pages/admin/CategoryManagement';
@@ -49,7 +50,7 @@ function App() {
               <Navbar />
               <main className="main-content">
                 <Routes>
-                  {}
+                  { }
                   <Route path="/" element={<Home />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
@@ -58,7 +59,7 @@ function App() {
                   <Route path="/products" element={<ProductList />} />
                   <Route path="/products/:id" element={<ProductDetail />} />
 
-                  {}
+                  { }
                   <Route
                     path="/profile"
                     element={
@@ -68,7 +69,7 @@ function App() {
                     }
                   />
 
-                  {}
+                  { }
                   <Route
                     path="/cart"
                     element={
@@ -118,7 +119,7 @@ function App() {
                     }
                   />
 
-                  {}
+                  { }
                   <Route
                     path="/seller/dashboard"
                     element={
@@ -160,7 +161,13 @@ function App() {
                     }
                   />
 
-                  {}
+                  { }
+                  <Route
+                    path="/seller-profile/:sellerName"
+                    element={<PublicSellerProfile />}
+                  />
+
+                  { }
                   <Route
                     path="/admin/dashboard"
                     element={

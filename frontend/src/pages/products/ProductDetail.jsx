@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { productAPI } from '../../services/api';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
@@ -93,7 +93,7 @@ const ProductDetail = () => {
                     <div className="product-info-section">
                         <h1 className="product-title">{product.name}</h1>
 
-                        {}
+                        { }
                         {product.reviews && product.reviews.length > 0 && (
                             <div className="product-average-rating">
                                 <div className="rating-stars-large">
@@ -205,11 +205,55 @@ const ProductDetail = () => {
                             </div>
                         )}
 
-                        {product.created_by && (
-                            <div className="seller-info">
-                                <p>Sold by: <strong>{product.created_by}</strong></p>
-                            </div>
-                        )}
+                        {product.created_by && (() => {
+                            const username = product.created_by.split(' ')[0];
+                            const initial = username.charAt(0).toUpperCase();
+                            return (
+                                <div style={{
+                                    marginTop: '1.5rem',
+                                    paddingTop: '1rem',
+                                    borderTop: '1px solid var(--border-color)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem'
+                                }}>
+                                    <p style={{ margin: 0, color: 'var(--text-secondary)' }}>Sold by:</p>
+                                    <Link
+                                        to={`/seller-profile/${username}`}
+                                        style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '0.75rem',
+                                            textDecoration: 'none',
+                                            color: 'var(--text-primary)',
+                                            fontWeight: 500,
+                                            padding: '0.25rem 0.5rem',
+                                            borderRadius: '8px',
+                                            transition: 'background-color 0.2s'
+                                        }}
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                    >
+                                        <div style={{
+                                            width: '40px',
+                                            height: '40px',
+                                            borderRadius: '50%',
+                                            backgroundColor: 'var(--primary-color)',
+                                            color: 'white',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontWeight: 'bold',
+                                            fontSize: '1.2rem',
+                                            textTransform: 'uppercase'
+                                        }}>
+                                            {initial}
+                                        </div>
+                                        <span style={{ fontSize: '1rem' }}>{username}</span>
+                                    </Link>
+                                </div>
+                            );
+                        })()}
                     </div>
                 </div>
 
