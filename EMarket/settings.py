@@ -38,7 +38,8 @@ INSTALLED_APPS = [
     'Orders',
     'shipping',
     'Reviews',
-    'Payments'
+    'Payments',
+    'drf_yasg'
 
     
 ]

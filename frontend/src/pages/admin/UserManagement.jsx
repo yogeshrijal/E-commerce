@@ -31,6 +31,18 @@ const UserManagement = () => {
         ? users.filter((user) => user.role === filterRole)
         : users;
 
+    const handleDeleteUser = async (id) => {
+        if (window.confirm('Are you sure you want to delete this user?')) {
+            try {
+                await userAPI.deleteUser(id);
+                setUsers(users.filter((user) => user.id !== id));
+            } catch (err) {
+                console.error('Error deleting user:', err);
+                alert('Failed to delete user');
+            }
+        }
+    };
+
     if (loading) return <LoadingSpinner />;
     if (error) return <ErrorMessage message={error} onRetry={fetchUsers} />;
 
@@ -63,6 +75,7 @@ const UserManagement = () => {
                                 <th>Role</th>
                                 <th>Contact</th>
                                 <th>Address</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -78,6 +91,24 @@ const UserManagement = () => {
                                     </td>
                                     <td>{user.contact || '-'}</td>
                                     <td>{user.address || '-'}</td>
+                                    <td>
+                                        <button
+                                            onClick={() => handleDeleteUser(user.id)}
+                                            className="btn-delete"
+                                            disabled={user.role === 'admin'}
+                                            title={user.role === 'admin' ? 'Cannot delete admin users' : 'Delete user'}
+                                            style={{
+                                                backgroundColor: user.role === 'admin' ? '#ccc' : '#ff4d4f',
+                                                color: 'white',
+                                                border: 'none',
+                                                padding: '5px 10px',
+                                                borderRadius: '4px',
+                                                cursor: user.role === 'admin' ? 'not-allowed' : 'pointer',
+                                            }}
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>

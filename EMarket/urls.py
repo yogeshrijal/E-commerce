@@ -26,6 +26,15 @@ from Orders.views import OrderViewSet
 from shipping.views import GlobalShippingSerializerViewset,ShippingZoneViewset
 from Reviews.views import ReviewViewset
 from Payments.views import PaymentViewSet
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework import permissions
+
+
+
+
+
+
 router=DefaultRouter()
 router.register('user',UserViewSet,basename='user')
 router.register('category',CategoryViewSet,basename='category')
@@ -39,13 +48,28 @@ router.register('reset-password',PasswordResetTokenViewSet,basename='reset-passw
 router.register('reset-password-confirm',ResetPasswordViewset,basename='reset-password-confirm')
 
 
+
+
+schema_view = get_schema_view(
+    openapi.Info(
+        title="My API",
+        default_version='v1',
+        description="API Documentation",
+    ),
+    public=True,
+    permission_classes=[permissions.AllowAny],
+)
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('gettoken/',TokenObtainPairView.as_view()),
     path('verifytoken/',TokenVerifyView.as_view()),
     path('tokenrefresh/',TokenRefreshView.as_view()),
     path('',include(router.urls)),
-     path('api_auth/', include('rest_framework.urls')),
+    path('api_auth/', include('rest_framework.urls')),
+    path('swagger/', schema_view.with_ui('swagger')),
+    path('redoc/', schema_view.with_ui('redoc')),
 
 ]
 if settings.DEBUG:

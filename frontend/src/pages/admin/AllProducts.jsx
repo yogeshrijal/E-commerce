@@ -29,6 +29,18 @@ const AllProducts = () => {
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const handleDeleteProduct = async (id) => {
+        if (window.confirm('Are you sure you want to delete this product?')) {
+            try {
+                await productAPI.deleteProduct(id);
+                setProducts(products.filter((product) => product.id !== id));
+            } catch (err) {
+                console.error('Error deleting product:', err);
+                alert('Failed to delete product');
+            }
+        }
+    };
+
     if (loading) return <LoadingSpinner />;
 
     return (
@@ -80,9 +92,23 @@ const AllProducts = () => {
                                             </span>
                                         </td>
                                         <td>
-                                            <Link to={`/products/${product.id}`} className="btn-link" target="_blank">
+                                            <Link to={`/products/${product.id}`} className="btn-link" target="_blank" style={{ marginRight: '10px' }}>
                                                 View
                                             </Link>
+                                            <button
+                                                onClick={() => handleDeleteProduct(product.id)}
+                                                className="btn-delete"
+                                                style={{
+                                                    backgroundColor: '#ff4d4f',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    padding: '5px 10px',
+                                                    borderRadius: '4px',
+                                                    cursor: 'pointer',
+                                                }}
+                                            >
+                                                Delete
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}
