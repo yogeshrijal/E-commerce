@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'shipping',
     'Reviews',
     'Payments',
-    'drf_yasg'
+    'drf_yasg',
+    'Chats'
 
     
 ]
