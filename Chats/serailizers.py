@@ -17,10 +17,29 @@ class ConversationSerializer(ModelSerializer):
         source='product',
         write_only=True
     )
+    unread_count = serializers.SerializerMethodField()
+    last_message = serializers.SerializerMethodField()
+
     class Meta:
         model=Conversation
-        fields=['id','customer','seller','product', 'created_at','customer_name','product_name','product_image','product_id','seller_name']
+        fields=['id','customer','seller','product', 'created_at','customer_name','product_name','product_image','product_id','seller_name', 'unread_count', 'last_message']
         read_only_fields=['customer','seller','product', 'created_at']
+
+    def get_unread_count(self, obj):
+        request = self.context.get('request')
+        if request and request.user:
+            return obj.messages.filter(is_read=False).exclude(sender=request.user).count()
+        return 0
+
+    def get_last_message(self, obj):
+        last_msg = obj.messages.first() 
+        if last_msg:
+            return {
+                'content': last_msg.content,
+                'created_at': last_msg.created_at,
+                'sender': last_msg.sender.username
+            }
+        return None
 
 
 

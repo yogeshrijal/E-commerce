@@ -1,11 +1,13 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import { useChat } from '../../context/ChatContext';
 import ThemeToggle from '../common/ThemeToggle';
 
 const Navbar = () => {
     const { isAuthenticated, user, logout, isAdmin, isSeller } = useAuth();
     const { getCartCount } = useCart();
+    const { hasNewChats, markAsRead } = useChat();
     const navigate = useNavigate();
 
     const handleLogout = () => {
@@ -28,6 +30,24 @@ const Navbar = () => {
                         </Link>
 
                         <ThemeToggle />
+
+                        {isAuthenticated && (
+                            <Link to="/chats" className="nav-link" onClick={markAsRead}>
+                                Messages
+                                {hasNewChats && (
+                                    <span style={{
+                                        display: 'inline-block',
+                                        width: '8px',
+                                        height: '8px',
+                                        backgroundColor: '#ff4444',
+                                        borderRadius: '50%',
+                                        marginLeft: '6px',
+                                        verticalAlign: 'middle',
+                                        marginBottom: '2px'
+                                    }}></span>
+                                )}
+                            </Link>
+                        )}
 
                         {isAuthenticated ? (
                             <>

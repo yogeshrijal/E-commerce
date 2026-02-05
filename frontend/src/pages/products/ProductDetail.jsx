@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { productAPI } from '../../services/api';
+import { productAPI, chatAPI } from '../../services/api';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
@@ -209,48 +209,63 @@ const ProductDetail = () => {
                             const username = product.created_by.split(' ')[0];
                             const initial = username.charAt(0).toUpperCase();
                             return (
-                                <div style={{
-                                    marginTop: '1.5rem',
-                                    paddingTop: '1rem',
-                                    borderTop: '1px solid var(--border-color)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '0.5rem'
-                                }}>
-                                    <p style={{ margin: 0, color: 'var(--text-secondary)' }}>Sold by:</p>
-                                    <Link
-                                        to={`/seller-profile/${username}`}
-                                        style={{
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            gap: '0.75rem',
-                                            textDecoration: 'none',
-                                            color: 'var(--text-primary)',
-                                            fontWeight: 500,
-                                            padding: '0.25rem 0.5rem',
-                                            borderRadius: '8px',
-                                            transition: 'background-color 0.2s'
-                                        }}
-                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'}
-                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                                    >
-                                        <div style={{
-                                            width: '40px',
-                                            height: '40px',
-                                            borderRadius: '50%',
-                                            backgroundColor: 'var(--primary-color)',
-                                            color: 'white',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            fontWeight: 'bold',
-                                            fontSize: '1.2rem',
-                                            textTransform: 'uppercase'
-                                        }}>
-                                            {initial}
+                                <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                            <p style={{ margin: 0, color: 'var(--text-secondary)' }}>Sold by:</p>
+                                            <Link
+                                                to={`/seller-profile/${username}`}
+                                                style={{
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: '0.75rem',
+                                                    textDecoration: 'none',
+                                                    color: 'var(--text-primary)',
+                                                    fontWeight: 500,
+                                                    padding: '0.25rem 0.5rem',
+                                                    borderRadius: '8px',
+                                                    transition: 'background-color 0.2s'
+                                                }}
+                                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-secondary)'}
+                                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                            >
+                                                <div style={{
+                                                    width: '40px',
+                                                    height: '40px',
+                                                    borderRadius: '50%',
+                                                    backgroundColor: 'var(--primary-color)',
+                                                    color: 'white',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    fontWeight: 'bold',
+                                                    fontSize: '1.2rem',
+                                                    textTransform: 'uppercase'
+                                                }}>
+                                                    {initial}
+                                                </div>
+                                                <span style={{ fontSize: '1rem' }}>{username}</span>
+                                            </Link>
                                         </div>
-                                        <span style={{ fontSize: '1rem' }}>{username}</span>
-                                    </Link>
+
+                                        {isAuthenticated && isCustomer && (
+                                            <button
+                                                onClick={async () => {
+                                                    try {
+                                                        await chatAPI.startConversation(product.id);
+                                                        navigate('/chats');
+                                                    } catch (err) {
+                                                        console.error('Failed to start chat', err);
+                                                        toast.error('Failed to start chat with seller');
+                                                    }
+                                                }}
+                                                className="btn btn-secondary"
+                                                style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+                                            >
+                                                Chat with Seller
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             );
                         })()}

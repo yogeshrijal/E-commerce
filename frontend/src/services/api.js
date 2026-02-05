@@ -213,4 +213,12 @@ export const paymentAPI = {
     createPayment: (data) => api.post('/payment/', data),
 };
 
+export const chatAPI = {
+    getConversations: () => api.get('/chats/'),
+    startConversation: (product_id) => api.post('/chats/', { product_id }),
+    getMessages: (id) => api.get(`/chats/${id}/message/`),
+    sendMessage: (id, content) => api.post(`/chats/${id}/send_message/`, { content }),
+    markAsRead: (id) => api.post(`/chats/${id}/mark_as_read/`),
+};
+
 export default api;

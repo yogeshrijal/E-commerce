@@ -27,6 +27,11 @@ class ConversationViewset(viewsets.ModelViewSet):
         product=get_object_or_404(Product,id=product_id)
 
         existing_chat=Conversation.objects.filter(customer=request.user,product=product).first()
+        if product.created_by is None:
+            return Response(
+                {"error": "This product does not have a seller assigned. You cannot start a chat."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
         if existing_chat:
@@ -49,6 +54,21 @@ class ConversationViewset(viewsets.ModelViewSet):
         messages =  conversation.messages.all().order_by('created_at')
         serializer=MessageSerializer(messages,many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def send_message(self, request, pk=None):
+        conversation = self.get_object()
+        serializer = MessageSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(conversation=conversation, sender=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['post'])
+    def mark_as_read(self, request, pk=None):
+        conversation = self.get_object()
+        conversation.messages.exclude(sender=request.user).update(is_read=True)
+        return Response({'status': 'messages marked as read'}, status=status.HTTP_200_OK)
 
 
         
