@@ -29,6 +29,7 @@ from Payments.views import PaymentViewSet
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
+from Chats.views import ConversationViewset
 
 
 
@@ -46,6 +47,7 @@ router.register('review',ReviewViewset,basename='review')
 router.register('payment',PaymentViewSet,basename='payment')
 router.register('reset-password',PasswordResetTokenViewSet,basename='reset-password')
 router.register('reset-password-confirm',ResetPasswordViewset,basename='reset-password-confirm')
+router.register('chats',ConversationViewset,basename='chats')
 
 
 

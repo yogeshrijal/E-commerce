@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'Reviews',
     'Payments',
     'drf_yasg',
-    'Chats'
+    'Chats',
+    'channels'
 
     
 ]
@@ -151,4 +152,6 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'your email'        
 EMAIL_HOST_PASSWORD = 'input your host password'  
 DEFAULT_FROM_EMAIL = 'your mail'  
+ASGI_APPLICATION = 'Emarket.asgi.application'
+
 

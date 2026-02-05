@@ -7,7 +7,7 @@ from Products.models import Product
 
 
 
-class conversationSerializer(ModelSerializer):
+class ConversationSerializer(ModelSerializer):
     customer_name = serializers.CharField(source='customer.username', read_only=True)
     seller_name = serializers.CharField(source='seller.username', read_only=True)
     product_name = serializers.CharField(source='product.name', read_only=True)
