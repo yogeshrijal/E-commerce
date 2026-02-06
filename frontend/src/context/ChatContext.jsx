@@ -11,15 +11,12 @@ export const ChatProvider = ({ children }) => {
     const previousConversationsRef = useRef(null); // Use null to indicate initially empty/not loaded
 
     useEffect(() => {
-        let interval;
         if (isAuthenticated) {
             checkChats(true); // Initial check
-            interval = setInterval(() => checkChats(false), 10000); // Poll every 10s (frequent enough for demo)
         } else {
             previousConversationsRef.current = null;
             setHasNewChats(false);
         }
-        return () => clearInterval(interval);
     }, [isAuthenticated]);
 
     const checkChats = async (isInitial = false) => {

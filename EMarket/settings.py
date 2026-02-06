@@ -24,6 +24,7 @@ ALLOWED_HOSTS = []
 
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -152,6 +153,12 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'your email'        
 EMAIL_HOST_PASSWORD = 'input your host password'  
 DEFAULT_FROM_EMAIL = 'your mail'  
-ASGI_APPLICATION = 'Emarket.asgi.application'
+ASGI_APPLICATION = 'EMarket.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
 
 

@@ -250,14 +250,8 @@ const ProductDetail = () => {
 
                                         {isAuthenticated && isCustomer && (
                                             <button
-                                                onClick={async () => {
-                                                    try {
-                                                        await chatAPI.startConversation(product.id);
-                                                        navigate('/chats');
-                                                    } catch (err) {
-                                                        console.error('Failed to start chat', err);
-                                                        toast.error('Failed to start chat with seller');
-                                                    }
+                                                onClick={() => {
+                                                    navigate('/chats', { state: { productId: product.id } });
                                                 }}
                                                 className="btn btn-secondary"
                                                 style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}

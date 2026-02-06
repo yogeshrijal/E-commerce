@@ -15,15 +15,16 @@ django.setup()
 
 # Import these AFTER django.setup()
 from channels.routing import ProtocolTypeRouter, URLRouter
-from channels.auth import AuthMiddlewareStack
-from Chats.routing import websocket_urlpatterns  # Import your routes here
+from channels.routing import ProtocolTypeRouter, URLRouter
+from .middleware import JwtAuthMiddleware
+from Chats.route import websocket_urlpatterns  # Import your routes here
 
 application = ProtocolTypeRouter({
     # Django's ASGI application to handle traditional HTTP requests
     "http": get_asgi_application(),
 
     # WebSocket handler
-    "websocket": AuthMiddlewareStack(
+    "websocket": JwtAuthMiddleware(
         URLRouter(
             websocket_urlpatterns
         )

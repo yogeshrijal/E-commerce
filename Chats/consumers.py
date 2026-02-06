@@ -8,14 +8,17 @@ from Products.models import Product
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
     async def connect(self):
+       # Accept immediately to send debug info to client
+       await self.accept()
+       
        self.user=self.scope['user']
-
+       
        if not self.user.is_authenticated:
+           await self.send(text_data=json.dumps({"type": "error", "message": "User not authenticated. Check token."}))
            await self.close()
            return
        
        url_route=self.scope['url_route']['kwargs']
-
 
        if 'product_id' in url_route:
            product_id=url_route['product_id']
@@ -26,6 +29,10 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
            self.conversation=await self.get_conversation(conversation_id)
 
        if not self.conversation:
+           await self.send(text_data=json.dumps({
+               "type": "error", 
+               "message": f"Conversation not found or access denied for user {self.user.id}. Conv ID: {url_route.get('conversation_id')}"
+            }))
            await self.close()
            return
        
@@ -38,7 +45,6 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
            self.room_group_name,
            self.channel_name
        )
-       await self.accept()
        await self.send(text_data=json.dumps({
         "type": "connection_established",
         "conversation_id": self.conversation.id

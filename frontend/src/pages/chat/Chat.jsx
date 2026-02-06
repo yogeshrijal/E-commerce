@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { chatAPI } from '../../services/api';
 import './Chat.css';
 import { useAuth } from '../../context/AuthContext';
@@ -14,16 +15,25 @@ const Chat = () => {
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const socket = React.useRef(null);
+    const socket = useRef(null);
+    const location = useLocation();
 
     useEffect(() => {
         fetchConversations();
     }, []);
 
     useEffect(() => {
+        const stateProductId = location.state?.productId;
+
         if (selectedConversation) {
+            // Existing conversation selected
             fetchMessages(selectedConversation.id);
-            connectWebSocket(selectedConversation.id);
+            connectWebSocket({ conversationId: selectedConversation.id });
+        } else if (stateProductId) {
+            // ensure we don't already have a conversation for this product in the list to avoid duplicate connections or confusion
+            // But for now, just trust the lazy creation flow.
+            // We don't have a conversation ID yet, so we connect via product ID
+            connectWebSocket({ productId: stateProductId });
         }
 
         return () => {
@@ -31,20 +41,28 @@ const Chat = () => {
                 socket.current.close();
             }
         };
-    }, [selectedConversation]);
+    }, [selectedConversation, location.state]);
 
-    const connectWebSocket = (conversationId) => {
+    const connectWebSocket = ({ conversationId, productId }) => {
         // Close existing connection if any
         if (socket.current) {
             socket.current.close();
         }
 
         // Construct WebSocket URL
-        // Assuming backend runs on localhost:8000. Adjust based on your environment config.
         const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        // Note: Using hardcoded localhost:8000 as per common dev setup. 
-        // In production, this should be dynamic based on window.location.host
-        const wsUrl = `${wsProtocol}//localhost:8000/ws/chat/${conversationId}/?token=${localStorage.getItem('access_token')}`;
+        let wsPath = '';
+
+        if (conversationId) {
+            wsPath = `/ws/chat/${conversationId}/`;
+        } else if (productId) {
+            wsPath = `/ws/chat/product/${productId}/`;
+        } else {
+            console.error("No conversationId or productId provided for WebSocket");
+            return;
+        }
+
+        const wsUrl = `${wsProtocol}//localhost:8000${wsPath}?token=${localStorage.getItem('access_token')}`;
 
         socket.current = new WebSocket(wsUrl);
 
@@ -56,19 +74,43 @@ const Chat = () => {
             const data = JSON.parse(e.data);
             console.log("WebSocket Message Received:", data);
 
+            if (data.type === 'connection_established') {
+                // The backend has confirmed the conversation exists or was created.
+                // It returns the conversation_id.
+                const { conversation_id } = data;
+
+                // If we were in "lazy" mode (no selectedConversation yet), we should now fetch details or at least know the ID.
+                // Ideally, we might want to reload the conversations list or fetch this specific conversation's details to set it as selected.
+                if (!selectedConversation || selectedConversation.id !== conversation_id) {
+                    // We need to set the selected conversation so the UI updates.
+                    // Since we might not have the full conversation object, we can try to find it in the list, or fetch it.
+                    // For now, let's refresh the conversation list to ensure it appears.
+                    fetchConversations().then((convs) => {
+                        const conv = convs?.find(c => c.id === conversation_id);
+                        if (conv) {
+                            setSelectedConversation(conv);
+                        }
+                    });
+                }
+            }
+
             if (data.type === 'error') {
                 alert("Connection Error: " + data.message);
             }
 
             if (data.type === 'chat_message') {
                 const newMsg = {
-                    id: Date.now(), // Temporary ID for list key
-                    sender: data.sender_name, // Backend sends sender_name
+                    id: Date.now(),
+                    sender: data.sender_name,
                     content: data.message,
-                    created_at: new Date().toISOString(), // Or use server timestamp if available
-                    // Add other fields if necessary to match your Message model shape
+                    created_at: new Date().toISOString(),
                 };
                 setMessages((prevMessages) => [...prevMessages, newMsg]);
+
+                // If we receive a message, we should make sure the conversation is in the list
+                if (!conversations.find(c => c.id === selectedConversation?.id)) {
+                    fetchConversations();
+                }
             }
         };
 
