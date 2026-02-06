@@ -14,6 +14,7 @@ const Chat = () => {
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const socket = React.useRef(null);
 
     useEffect(() => {
         fetchConversations();
@@ -22,9 +23,59 @@ const Chat = () => {
     useEffect(() => {
         if (selectedConversation) {
             fetchMessages(selectedConversation.id);
-            // In a real app, you might set up polling or a websocket connection here
+            connectWebSocket(selectedConversation.id);
         }
+
+        return () => {
+            if (socket.current) {
+                socket.current.close();
+            }
+        };
     }, [selectedConversation]);
+
+    const connectWebSocket = (conversationId) => {
+        // Close existing connection if any
+        if (socket.current) {
+            socket.current.close();
+        }
+
+        // Construct WebSocket URL
+        // Assuming backend runs on localhost:8000. Adjust based on your environment config.
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        // Note: Using hardcoded localhost:8000 as per common dev setup. 
+        // In production, this should be dynamic based on window.location.host
+        const wsUrl = `${wsProtocol}//localhost:8000/ws/chat/${conversationId}/?token=${localStorage.getItem('access_token')}`;
+
+        socket.current = new WebSocket(wsUrl);
+
+        socket.current.onopen = () => {
+            console.log('WebSocket Connected');
+        };
+
+        socket.current.onmessage = (e) => {
+            const data = JSON.parse(e.data);
+            console.log("WebSocket Message Received:", data);
+
+            if (data.type === 'error') {
+                alert("Connection Error: " + data.message);
+            }
+
+            if (data.type === 'chat_message') {
+                const newMsg = {
+                    id: Date.now(), // Temporary ID for list key
+                    sender: data.sender_name, // Backend sends sender_name
+                    content: data.message,
+                    created_at: new Date().toISOString(), // Or use server timestamp if available
+                    // Add other fields if necessary to match your Message model shape
+                };
+                setMessages((prevMessages) => [...prevMessages, newMsg]);
+            }
+        };
+
+        socket.current.onclose = (e) => {
+            console.error('Chat socket closed unexpectedly');
+        };
+    };
 
     const fetchConversations = async () => {
         try {
@@ -97,9 +148,13 @@ const Chat = () => {
                 return;
             }
 
-            const compressedBase64 = await compressImage(file);
-            await chatAPI.sendMessage(selectedConversation.id, compressedBase64);
-            fetchMessages(selectedConversation.id);
+            if (socket.current && socket.current.readyState === WebSocket.OPEN) {
+                const compressedBase64 = await compressImage(file);
+                socket.current.send(JSON.stringify({ message: compressedBase64 }));
+                // No need to manually fetchMessages, the onmessage handler will append it (echo)
+            } else {
+                alert("Connection lost. Please try again.");
+            }
         } catch (err) {
             console.error("Failed to send image", err);
             alert("Failed to send image.");
@@ -111,12 +166,13 @@ const Chat = () => {
         if (!newMessage.trim() || !selectedConversation) return;
 
         try {
-            // Attempt to send message
-            await chatAPI.sendMessage(selectedConversation.id, newMessage);
-            // If successful (and backend returns the new message), append it
-            // For now, if backend is not updated, this will likely fail
-            fetchMessages(selectedConversation.id);
-            setNewMessage('');
+            // Send via WebSocket
+            if (socket.current && socket.current.readyState === WebSocket.OPEN) {
+                socket.current.send(JSON.stringify({ message: newMessage }));
+                setNewMessage('');
+            } else {
+                alert("Connection not established. Please wait or refresh.");
+            }
         } catch (err) {
             console.error("Failed to send message", err);
             alert("Failed to send message. The backend may not support sending messages yet.");
