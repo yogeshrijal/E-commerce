@@ -179,6 +179,7 @@ export const productAPI = {
         });
     },
     deleteProduct: (id) => api.delete(`/product/${id}/`),
+    compareProducts: (productIds) => api.get(`/product/compare/?id=${productIds.join(',')}`),
 };
 
 export const orderAPI = {

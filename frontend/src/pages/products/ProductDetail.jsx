@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { productAPI, chatAPI } from '../../services/api';
 import { useCart } from '../../context/CartContext';
+import { useCompare } from '../../context/CompareContext';
 import { useAuth } from '../../context/AuthContext';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import ErrorMessage from '../../components/common/ErrorMessage';
@@ -13,6 +14,7 @@ const ProductDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { addToCart } = useCart();
+    const { addToCompare, isInCompare, removeFromCompare } = useCompare();
     const { isAuthenticated, isCustomer } = useAuth();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -201,6 +203,13 @@ const ProductDetail = () => {
                                 </div>
                                 <button onClick={handleAddToCart} className="btn btn-primary btn-large">
                                     Add to Cart
+                                </button>
+                                <button
+                                    onClick={() => isInCompare(product.id) ? removeFromCompare(product.id) : addToCompare(product)}
+                                    className={`btn ${isInCompare(product.id) ? 'btn-primary' : 'btn-secondary'} btn-large`}
+                                    style={{ marginLeft: '1rem' }}
+                                >
+                                    {isInCompare(product.id) ? '✓ In Compare' : '⚖️ Add to Compare'}
                                 </button>
                             </div>
                         )}
