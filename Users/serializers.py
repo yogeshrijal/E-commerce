@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer
-from Users.models import User,PasswordResetToken
+from Users.models import User,PasswordResetToken,EmailVerificationToken
 from rest_framework import serializers
 from django.core.mail import send_mail
 import uuid
@@ -26,7 +26,36 @@ class RegsiterUserSerializer(ModelSerializer):
             email=validated_data['email'],
             contact=validated_data['contact']
         )
+        token_string=str(uuid.uuid4())
+        EmailVerificationToken.objects.create(
+            user=user,
+            token=token_string
+            )
+        
+        verify_link = f"http://localhost:5173/verify-email?token={token_string}"
+        email_message = f"""
+Hi {user.username},
+
+Welcome to EMarket! Please verify your email address by clicking the link below:
+
+{verify_link}
+
+If you didn't create an account, you can safely ignore this email.
+"""
+        send_mail(
+            subject='Email verification for login ',
+            message=email_message,
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[user.email],
+            fail_silently=False
+
+        )
+
+
+
         return user
+         
+        
 class  PasswordResetTokenSerializers(ModelSerializer):
     email=serializers.EmailField( write_only=True, required=True)
 

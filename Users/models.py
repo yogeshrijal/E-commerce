@@ -19,6 +19,19 @@ class User(AbstractUser):
     def __str__(self):
         return f"{self.username} ({self.role})"
     
+
+class EmailVerificationToken(models.Model):
+    user=models.ForeignKey(User, on_delete=models.CASCADE)
+    token=models.CharField(max_length=100)
+    is_used=models.BooleanField(default=False)
+    created_at=models.DateTimeField(default=timezone.now)
+
+
+    def is_valid(self):
+        expire_time=self.created_at + timedelta(days=1)
+        return timezone.now() <=expire_time and not self.is_used 
+        
+    
        
 class PasswordResetToken(models.Model):
     user=models.ForeignKey(User,on_delete=models.CASCADE)

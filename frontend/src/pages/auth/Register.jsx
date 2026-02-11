@@ -77,13 +77,14 @@ const Register = () => {
         try {
             await register(formData);
 
-            if (formData.role === 'seller') {
-                navigate('/seller/dashboard');
-            } else {
-                navigate('/products');
-            }
+            // Only redirect to login on successful registration
+            setTimeout(() => {
+                navigate('/login');
+            }, 2500);
         } catch (error) {
             console.error('Registration error:', error);
+            // Error is already handled in AuthContext with toast
+            // Don't redirect on error
         } finally {
             setLoading(false);
         }

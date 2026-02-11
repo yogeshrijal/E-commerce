@@ -55,15 +55,26 @@ export const AuthProvider = ({ children }) => {
         try {
             const response = await authAPI.register(userData);
 
-            await login(userData.username, userData.password);
-
-            toast.success('Registration successful!');
+            // Don't auto-login - user must verify email first
+            toast.success('Registration successful! Please check your email to verify your account.');
             return response.data;
         } catch (error) {
-            const message = error.response?.data?.username?.[0] ||
-                error.response?.data?.email?.[0] ||
-                'Registration failed';
-            toast.error(message);
+            // Handle different types of errors
+            if (error.response?.status === 500) {
+                // Server error (likely email sending issue during development)
+                toast.error('Registration failed: Email service not configured. Please ask your administrator to configure SMTP settings in the backend.', {
+                    autoClose: 5000
+                });
+            } else if (error.response?.data) {
+                // Validation errors
+                const message = error.response.data.username?.[0] ||
+                    error.response.data.email?.[0] ||
+                    error.response.data.message ||
+                    'Registration failed. Please check your information.';
+                toast.error(message);
+            } else {
+                toast.error('Registration failed. Please try again.');
+            }
             throw error;
         }
     };

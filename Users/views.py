@@ -1,11 +1,12 @@
 from django.shortcuts import render
 from rest_framework import viewsets,mixins,status
 from Users.models import User,PasswordResetToken
-from Users.serializers import UserSerializer,RegsiterUserSerializer,PasswordResetTokenSerializers,PasswordResetSerializer
+from Users.serializers import UserSerializer,RegsiterUserSerializer,PasswordResetTokenSerializers,PasswordResetSerializer,EmailVerificationToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import  IsAuthenticated ,AllowAny
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+from rest_framework.decorators import action
 
  
 # Create your views here.
@@ -34,7 +35,47 @@ class UserViewSet(viewsets.ModelViewSet):
            return User.objects.all()
        return User.objects.filter(id=user.id)
     
+class UserRegistrationViewset(mixins.CreateModelMixin,viewsets.GenericViewSet):
+    queryset=EmailVerificationToken.objects.all()
+    serializer_class=RegsiterUserSerializer
 
+    def create(self, request, *args, **kwargs):
+         super().create(request, *args, **kwargs)
+         return Response(
+             {"message":"email verfication is sent"},
+             status=status.HTTP_201_CREATED
+         )
+    
+    
+
+class EmailVerifyViewSet(viewsets.GenericViewSet):
+    queryset=EmailVerificationToken.objects.all()
+    @action(detail=False,methods=['get'])
+    def verfy(self,request):
+        token_value=request.query_params.get('token')
+        if not token_value:
+            return Response({'error':'token value not found'},status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            token_obj=EmailVerificationToken.objects.get(token=token_value)
+
+            if not token_obj.is_valid():
+                return Response({'error:token is not valid'},status=status.HTTP_404_NOT_FOUND)
+            
+            user=token_obj.user
+            user.is_active=True
+            user.save()
+
+            token_obj.delete()
+
+            return Response({'message':'your account is verfied sucessfully'},status=status.HTTP_201_CREATED)
+        
+        except EmailVerificationToken.DoesNotExist:
+            return Response({'error':'the token is not valid or already used'},status=status.HTTP_400_BAD_REQUEST)
+            
+
+
+        
 class PasswordResetTokenViewSet(mixins.CreateModelMixin,viewsets.GenericViewSet):
     queryset=PasswordResetToken.objects.all()
     serializer_class=PasswordResetTokenSerializers

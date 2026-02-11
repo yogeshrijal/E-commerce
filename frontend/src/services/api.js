@@ -56,9 +56,10 @@ api.interceptors.response.use(
 
 export const authAPI = {
     login: (credentials) => api.post('/gettoken/', credentials),
-    register: (userData) => api.post('/user/', userData),
+    register: (userData) => api.post('/register/', userData),
     verifyToken: (token) => api.post('/verifytoken/', { token }),
     refreshToken: (refresh) => api.post('/tokenrefresh/', { refresh }),
+    verifyEmail: (token) => api.get(`/account/verfy/?token=${token}`),
 };
 
 export const userAPI = {
