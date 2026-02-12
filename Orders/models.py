@@ -4,6 +4,29 @@ from Products.models import ProductSKU
 from django.utils import timezone
 
 # Create your models here.
+
+class Coupon(models.Model):
+
+   DISCOUNT_CHOICES=[
+       ('fixed','Fixed'),
+       ('percentage','Percentage')
+    ]
+   code=models.CharField(max_length=50,unique=True)
+   discount_type=models.CharField(max_length=50,choices=DISCOUNT_CHOICES,default='fixed')
+   discount_value=models.DecimalField(max_digits=10,decimal_places=2)
+   min_purchase_ammount=models.DecimalField(max_digits=10,decimal_places=2,default=0.00)
+   active=models.BooleanField(default=True)
+   valid_from=models.DateTimeField()
+   valid_to=models.DateTimeField()
+   usage_limit=models.PositiveIntegerField(default=100)
+   used_count=models.PositiveIntegerField(default=0)
+
+
+
+
+   def __str__(self):
+      return self.code
+
 class Order(models.Model):
      STATUS_CHOICES=[
           ('pending','Pending'),
@@ -13,6 +36,8 @@ class Order(models.Model):
           ('canceled','Canceled'),
      ]
      customer=models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE , related_name='orders')
+     coupon=models.ForeignKey(Coupon,  on_delete=models.SET_NULL, null=True ,related_name='coupon')
+     discount_amount=models.DecimalField(max_digits=10, decimal_places=2,default=0.00)
      full_name=models.CharField(max_length=25)
      email=models.EmailField()
      address=models.CharField(max_length=25)
@@ -45,6 +70,12 @@ class OrderItem(models.Model):
     @property
     def total_item_price(self):
        return self.price_at_purchase * self.quantity_at_purchase
+    
+
+
+
+
+
 
     
  

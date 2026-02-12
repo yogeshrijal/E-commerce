@@ -85,7 +85,7 @@ const ShippingManagement = () => {
                     {globalRate ? (
                         <form onSubmit={handleUpdateGlobalRate} className="form-inline">
                             <div className="form-group">
-                                <label>Base Rate ($)</label>
+                                <label>Base Rate (Rs)</label>
                                 <input
                                     type="number"
                                     step="0.01"
@@ -117,7 +117,7 @@ const ShippingManagement = () => {
                             />
                         </div>
                         <div className="form-group">
-                            <label>Rate ($)</label>
+                            <label>Rate (Rs)</label>
                             <input
                                 type="number"
                                 step="0.01"
@@ -141,7 +141,7 @@ const ShippingManagement = () => {
                                 <thead>
                                     <tr>
                                         <th>Country</th>
-                                        <th>Rate ($)</th>
+                                        <th>Rate (Rs)</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
