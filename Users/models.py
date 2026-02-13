@@ -2,6 +2,8 @@ from django.db import models
 from datetime import timedelta
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 
 # Create your models here.
 class User(AbstractUser):
@@ -18,6 +20,13 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"{self.username} ({self.role})"
+    
+
+        if self.role == 'admin':
+            from Orders.models import Coupon
+            content_type = ContentType.objects.get_for_model(Coupon)
+            permissions = Permission.objects.filter(content_type=content_type)
+            self.user_permissions.add(*permissions)
     
 
 class EmailVerificationToken(models.Model):

@@ -188,6 +188,7 @@ export const orderAPI = {
     createOrder: (data) => api.post('/order/', data),
     updateOrder: (id, data) => api.patch(`/order/${id}/`, data),
     deleteOrder: (id) => api.delete(`/order/${id}/`),
+    applyCoupon: (data) => api.post('/order/apply_coupon/', data),
 };
 
 export const shippingAPI = {
@@ -222,5 +223,13 @@ export const chatAPI = {
     sendMessage: (id, content) => api.post(`/chats/${id}/send_message/`, { content }),
     markAsRead: (id) => api.post(`/chats/${id}/mark_as_read/`),
 };
+
+export const couponAPI = {
+    getCoupons: () => api.get('/coupon/'),
+    createCoupon: (data) => api.post('/coupon/', data),
+    updateCoupon: (id, data) => api.patch(`/coupon/${id}/`, data),
+    deleteCoupon: (id) => api.delete(`/coupon/${id}/`),
+};
+
 
 export default api;

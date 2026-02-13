@@ -22,7 +22,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView ,TokenRefreshView
 from rest_framework.routers import DefaultRouter
 from Users.views import UserViewSet,PasswordResetTokenViewSet,ResetPasswordViewset,UserRegistrationViewset,EmailVerifyViewSet
 from Products.views import ProductViewSet,CategoryViewSet
-from Orders.views import OrderViewSet
+from Orders.views import OrderViewSet,CouponViewSet
 from shipping.views import GlobalShippingSerializerViewset,ShippingZoneViewset
 from Reviews.views import ReviewViewset
 from Payments.views import PaymentViewSet
@@ -50,6 +50,7 @@ router.register('reset-password-confirm',ResetPasswordViewset,basename='reset-pa
 router.register('chats',ConversationViewset,basename='chats')
 router.register('register',UserRegistrationViewset,basename='register')
 router.register('account',EmailVerifyViewSet,basename='account')
+router.register('coupon',CouponViewSet,basename='coupon')
 
 
 

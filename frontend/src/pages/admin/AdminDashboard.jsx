@@ -110,6 +110,12 @@ const AdminDashboard = () => {
                             <h3>Manage Shipping</h3>
                             <p>Configure shipping zones and rates</p>
                         </Link>
+
+                        <Link to="/admin/coupons" className="action-card">
+                            <span className="action-icon">🎫</span>
+                            <h3>Manage Coupons</h3>
+                            <p>Create and manage discount codes</p>
+                        </Link>
                     </div>
                 </div>
 

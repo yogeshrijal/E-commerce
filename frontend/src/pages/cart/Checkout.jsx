@@ -24,6 +24,9 @@ const Checkout = () => {
     const [paymentMethod, setPaymentMethod] = useState('cod'); // 'cod' or 'esewa'
     const [shippingRates, setShippingRates] = useState({});
     const [shippingCost, setShippingCost] = useState(0);
+    const [couponCode, setCouponCode] = useState('');
+    const [discountAmount, setDiscountAmount] = useState(0);
+    const [appliedCoupon, setAppliedCoupon] = useState('');
     const [errors, setErrors] = useState({}); useEffect(() => {
         if (user) {
             setFormData(prev => ({
@@ -134,6 +137,36 @@ const Checkout = () => {
         if (name === 'country') {
             setShippingCost(calculateShippingCost(value));
         }
+        if (name === 'country') {
+            setShippingCost(calculateShippingCost(value));
+        }
+    };
+
+    const handleApplyCoupon = async () => {
+        if (!couponCode.trim()) {
+            toast.error('Please enter a coupon code');
+            return;
+        }
+
+        try {
+            const subtotal = getCartTotal();
+            const response = await orderAPI.applyCoupon({
+                code: couponCode,
+                subtotal: subtotal
+            });
+
+            if (response.data.valid) {
+                setDiscountAmount(parseFloat(response.data.discount));
+                setAppliedCoupon(couponCode);
+                toast.success(response.data.message);
+            }
+        } catch (error) {
+            console.error('Coupon error:', error);
+            setDiscountAmount(0);
+            setAppliedCoupon('');
+            const message = error.response?.data?.message || 'Failed to apply coupon';
+            toast.error(message);
+        }
     };
 
     const generateSignature = (totalAmount, transactionUuid, productCode) => {
@@ -202,15 +235,20 @@ const Checkout = () => {
                 tax: getTax(),
                 shipping_cost: shippingCost,
                 order_item: orderItems,
+                shipping_cost: shippingCost,
+                order_item: orderItems,
+                coupon_code: appliedCoupon, // Use applied coupon code
             };
 
             console.log('Sending order data:', orderData); // Debug log
 
             const response = await orderAPI.createOrder(orderData);
             const orderId = response.data.id;
+            // Use the total amount sent back from the backend (which includes any discounts)
+            const finalTotal = parseFloat(response.data.total_amount);
 
             if (paymentMethod === 'esewa') {
-                let totalAmountVal = getGrandTotal() + shippingCost;
+                let totalAmountVal = finalTotal;
                 totalAmountVal = Math.round(totalAmountVal * 100) / 100;
 
                 const totalAmount = (totalAmountVal % 1 === 0)
@@ -273,7 +311,7 @@ const Checkout = () => {
                 document.body.appendChild(form);
                 form.submit();
             } else {
-                let totalAmountVal = getGrandTotal() + shippingCost;
+                let totalAmountVal = finalTotal;
                 totalAmountVal = Math.round(totalAmountVal * 100) / 100;
                 const totalAmount = (totalAmountVal % 1 === 0) ? totalAmountVal.toString() : totalAmountVal.toFixed(2);
 
@@ -302,6 +340,7 @@ const Checkout = () => {
             const message = error.response?.data?.order_item?.[0] ||
                 JSON.stringify(error.response?.data?.order_item) ||
                 error.response?.data?.detail ||
+                error.response?.data?.error || // Added potential error field from backend
                 'Failed to place order';
             toast.error(message);
         } finally {
@@ -435,6 +474,43 @@ const Checkout = () => {
                             </div>
 
                             <div className="form-group">
+                                <label htmlFor="couponCode">Coupon Code (Optional)</label>
+                                <div className="coupon-input-group" style={{ display: 'flex', gap: '10px' }}>
+                                    <input
+                                        type="text"
+                                        id="couponCode"
+                                        value={couponCode}
+                                        onChange={(e) => setCouponCode(e.target.value)}
+                                        placeholder="Enter coupon code"
+                                        disabled={!!appliedCoupon}
+                                        className="form-control"
+                                    />
+                                    {appliedCoupon ? (
+                                        <button
+                                            type="button"
+                                            className="btn btn-danger"
+                                            onClick={() => {
+                                                setAppliedCoupon('');
+                                                setDiscountAmount(0);
+                                                setCouponCode('');
+                                                toast.info('Coupon removed');
+                                            }}
+                                        >
+                                            Remove
+                                        </button>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            className="btn btn-secondary"
+                                            onClick={handleApplyCoupon}
+                                        >
+                                            Apply
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="form-group">
                                 <label>Payment Method *</label>
                                 <div className="payment-methods">
                                     <div className={`payment-method ${paymentMethod === 'cod' ? 'active' : ''}`}
@@ -511,6 +587,13 @@ const Checkout = () => {
                                 <span>{formatPrice(getTax() || 0)}</span>
                             </div>
 
+                            {discountAmount > 0 && (
+                                <div className="summary-row discount" style={{ color: 'green' }}>
+                                    <span>Discount:</span>
+                                    <span>-{formatPrice(discountAmount)}</span>
+                                </div>
+                            )}
+
                             <div className="summary-row">
                                 <span>Shipping:</span>
                                 <span>{formatPrice(shippingCost)}</span>
@@ -518,7 +601,7 @@ const Checkout = () => {
 
                             <div className="summary-row total">
                                 <span>Total:</span>
-                                <span>{formatPrice((getGrandTotal() || 0) + shippingCost)}</span>
+                                <span>{formatPrice((getGrandTotal() || 0) + shippingCost - discountAmount)}</span>
                             </div>
                         </div>
                     </div>

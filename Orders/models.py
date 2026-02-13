@@ -24,6 +24,15 @@ class Coupon(models.Model):
 
 
 
+   def is_valid(self, amount):
+       now = timezone.now()
+       return (
+           self.active and
+           self.valid_from <= now <= self.valid_to and
+           self.used_count < self.usage_limit and
+           amount >= self.min_purchase_ammount
+       )
+
    def __str__(self):
       return self.code
 
@@ -71,8 +80,6 @@ class OrderItem(models.Model):
     def total_item_price(self):
        return self.price_at_purchase * self.quantity_at_purchase
     
-
-
 
 
 

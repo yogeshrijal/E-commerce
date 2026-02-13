@@ -1,16 +1,28 @@
+from decimal import Decimal
 from django.shortcuts import render
-from Orders.serializers import OrderSerializer
-from Orders.models import Order
+from Orders.serializers import OrderSerializer,CouponSerailizer
+from Orders.models import Order,Coupon
 from rest_framework import viewsets
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import SAFE_METHODS
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,IsAdminUser
 from rest_framework.response import Response
 from rest_framework import status 
 from Payments.models import Payment
+from rest_framework.decorators import action
+
 
 
 # Create your views here.
+
+
+
+class CouponViewSet(viewsets.ModelViewSet):
+    queryset=Coupon.objects.all()
+    serializer_class=CouponSerailizer
+    permission_classes=[IsAdminUser]
+
+
 
 
         
@@ -33,16 +45,41 @@ class OrderViewSet(viewsets.ModelViewSet):
         return Order.objects.none()
     def perform_create(self, serializer):
         serializer.save(customer=self.request.user)
+
+
+
+    @action(detail=False,methods=['post'],permission_classes=[IsAuthenticated])
+    def  apply_coupon(self,data):
+            code=self.request.data.get('code')
+            subtotal = Decimal(str(self.request.data.get('subtotal', '0')))
+
+            try:
+                coupon = Coupon.objects.get(code=code)
+                if coupon.is_valid(subtotal):
+                    # Calculate potential discount
+                    if coupon.discount_type == 'fixed':
+                        discount = coupon.discount_value
+                    else:
+                        discount = (coupon.discount_value / Decimal('100')) * subtotal
+                    
+                    return Response({
+                        "valid": True,
+                        "discount": discount,
+                        "message": "Coupon applied successfully!"
+                    })
+                return Response({"valid": False, "message": "Coupon criteria not met."}, status=400)
+            except Coupon.DoesNotExist:
+                return Response({"valid": False, "message": "Invalid code."}, status=404)
     def restore_stock(self,order):
-        for item in order.order_item.all():
-            sku=item.sku
-            sku.stock=sku.stock+item.quantity_at_purchase
-            sku.save()
+            for item in order.order_item.all():
+                sku=item.sku
+                sku.stock=sku.stock+item.quantity_at_purchase
+                sku.save()
+
 
 
 
     
-
 
     FORWARD_FLOW=['pending','processing','shipped']
     
@@ -63,6 +100,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         
         if old_status=='delivered':
             return Response({"error": "already delivered"},status=status.HTTP_403_FORBIDDEN)
+
 
             
         if new_status=='delivered' and user.role!='admin':
@@ -109,5 +147,6 @@ class OrderViewSet(viewsets.ModelViewSet):
             Payment.objects.filter(order=instance).update(status='failed')
              
         return response
+
 
 
