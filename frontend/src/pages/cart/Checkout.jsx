@@ -8,7 +8,7 @@ import CryptoJS from 'crypto-js';
 import { formatPrice } from '../../utils/currency';
 
 const Checkout = () => {
-    const { cartItems, getCartTotal, getTax, getGrandTotal, clearCart, getSellerGroups, hasMultipleSellers } = useCart();
+    const { cartItems, getCartTotal, getTax, getGrandTotal, clearCart, getSellerGroups, hasMultipleSellers, removeFromCart } = useCart();
     const { user } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
@@ -164,7 +164,20 @@ const Checkout = () => {
             console.error('Coupon error:', error);
             setDiscountAmount(0);
             setAppliedCoupon('');
-            const message = error.response?.data?.message || 'Failed to apply coupon';
+            setAppliedCoupon('');
+
+            let message = 'Failed to apply coupon';
+            if (error.response?.data) {
+                if (error.response.data.message) {
+                    message = error.response.data.message;
+                } else if (error.response.data.detail) {
+                    message = error.response.data.detail;
+                } else if (typeof error.response.data === 'string') {
+                    message = error.response.data;
+                } else {
+                    message = JSON.stringify(error.response.data);
+                }
+            }
             toast.error(message);
         }
     };
@@ -194,6 +207,12 @@ const Checkout = () => {
             return;
         }
 
+        // Check if coupon is entered but not applied
+        if (couponCode.trim() && (!appliedCoupon || appliedCoupon !== couponCode.trim())) {
+            toast.warn('Please apply the coupon or clear the field before placing the order');
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -205,12 +224,13 @@ const Checkout = () => {
                 return;
             }
 
-            const orderItems = await Promise.all(cartItems.map(async (item) => {
+            const orderItems = [];
+            for (const item of cartItems) {
                 if (item.sku.id) {
-                    return {
+                    orderItems.push({
                         sku: Number(item.sku.id),
                         quantity_at_purchase: item.quantity,
-                    };
+                    });
                 } else {
                     try {
                         const productResponse = await productAPI.getProduct(item.product.id);
@@ -218,16 +238,27 @@ const Checkout = () => {
                         if (!baseSKU || !baseSKU.id) {
                             throw new Error(`SKU ${item.sku.sku_code} not found`);
                         }
-                        return {
+                        orderItems.push({
                             sku: Number(baseSKU.id),
                             quantity_at_purchase: item.quantity,
-                        };
+                        });
                     } catch (err) {
                         console.error(`Failed to fetch SKU id for ${item.sku.sku_code}:`, err);
+                        // Auto-remove invalid item
+                        const invalidSku = item.sku.sku_code;
+                        // removeFromCart is not available in handleSubmit scope directly if not de-structured
+                        // We need to make sure removeFromCart is available. 
+                        // Check line 11: const { ... } = useCart();
+                        // We need to add removeFromCart to destructuring at the top.
+
+                        // For now, let's just throw, but we should fix destructuring first.
+                        // Actually, I can't easily change the destructuring line and this block in one go safely with replace.
+                        // I will throw a specific error with the SKU code to be handled in catch block?
+                        // Or better, I will assume I will fix destructuring in another step or this step if I can.
                         throw new Error(`Invalid SKU: ${item.sku.sku_code}`);
                     }
                 }
-            }));
+            }
 
             const orderData = {
                 ...formData,
@@ -334,13 +365,24 @@ const Checkout = () => {
 
         } catch (error) {
             console.error('Order error:', error);
+
+            // Check for Invalid SKU error
+            if (error.message && error.message.includes('Invalid SKU:')) {
+                const invalidSku = error.message.split('Invalid SKU:')[1].trim();
+                removeFromCart(invalidSku);
+                toast.error(`Removed invalid item (${invalidSku}) from cart. Please try placing order again.`);
+                setLoading(false);
+                return;
+            }
+
             console.error('Error response:', error.response?.data);
             console.error('Full error details:', JSON.stringify(error.response?.data, null, 2));
 
             const message = error.response?.data?.order_item?.[0] ||
                 JSON.stringify(error.response?.data?.order_item) ||
                 error.response?.data?.detail ||
-                error.response?.data?.error || // Added potential error field from backend
+                error.response?.data?.error ||
+                error.message ||
                 'Failed to place order';
             toast.error(message);
         } finally {

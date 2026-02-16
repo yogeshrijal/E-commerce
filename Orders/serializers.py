@@ -29,8 +29,8 @@ class OrderSerializer(ModelSerializer):
         model=Order
         fields=['id',  'full_name', 'email', 'contact', 'address', 
             'city', 'postal_code','country', 'total_amount', 'tax', 
-            'shipping_cost', 'status', 'order_item', 'created_at','transaction_id','updated_at', 'payment_details','coupon']
-        read_only_fields=['transaction_id','created_at','updated_at','shipping_cost','tax','total_amount','coupon']
+            'shipping_cost', 'status', 'order_item', 'created_at','transaction_id','updated_at', 'payment_details','coupon', 'coupon_code','discount_amount']
+        read_only_fields=['transaction_id','created_at','updated_at','shipping_cost','tax','total_amount','coupon','discount_amount']
 
     def validate(self, data):
         coupon_code=data.get('coupon_code')
@@ -116,8 +116,18 @@ class OrderSerializer(ModelSerializer):
 
     def create(self, validated_data):
         item_data=validated_data.pop('order_item')
-        coupon_obj=validated_data.pop('coupon_obj')
-        total_sum=validated_data.pop('total_sum',Decimal('0.00'))
+        
+        coupon_obj=validated_data.pop('coupon_obj', None)
+        coupon_code = validated_data.pop('coupon_code', None)
+        
+      
+        if not coupon_obj and coupon_code:
+            try:
+                coupon_obj = Coupon.objects.get(code=coupon_code)
+            except Coupon.DoesNotExist:
+                coupon_obj = None
+
+        total_sum=Decimal('0.00')
 
         with transaction.atomic():
             order=Order.objects.create(
@@ -129,25 +139,6 @@ class OrderSerializer(ModelSerializer):
                 
             )
          
-
-            discount=Decimal('0.00')
-            if coupon_obj:
-
-                if coupon_obj.discount_type=='fixed':
-                    discount=coupon_obj.discount_value
-                
-                else:
-                    discount=(coupon_obj.discount_value)/Decimal(100.00)*total_sum
-                    order.coupon=coupon_obj
-                    order.discount_amount=discount
-
-                    coupon_obj.used_count+=1
-                    coupon_obj.save()
-
-
-
-
-
             for item in item_data:
                 sku=item['sku']
                 quantity=item['quantity_at_purchase']
@@ -166,9 +157,23 @@ class OrderSerializer(ModelSerializer):
                     sku=sku,
                     price_at_purchase=price,
                     quantity_at_purchase=quantity
-
-
                 )
+
+            discount=Decimal('0.00')
+            if coupon_obj:
+                if coupon_obj.discount_type=='fixed':
+                    discount=coupon_obj.discount_value
+                else:
+                    discount=(coupon_obj.discount_value)/Decimal(100.00)*total_sum
+               
+                if total_sum >= coupon_obj.min_purchase_ammount:
+                     order.coupon=coupon_obj
+                     order.discount_amount=discount
+                     coupon_obj.used_count+=1
+                     coupon_obj.save()
+                else:
+                    discount = Decimal('0.00')
+
             shipping_cost=self.get_shipping_cost(order.country)
             order.shipping_cost=shipping_cost
 
@@ -181,13 +186,13 @@ class OrderSerializer(ModelSerializer):
 class CouponSerailizer(ModelSerializer):
     class Meta:
        model=Coupon
-       fields=['code','discount_type','discount_value','min_purchase_ammount','active','valid_from','valid_to','usage_limit','used_count']
+       fields=['id', 'code','discount_type','discount_value','min_purchase_ammount','active','valid_from','valid_to','usage_limit','used_count']
        read_only_fields=['used_count']
 
-
-       def validate(self,data):
-           if data['valid_from']>=data['valid_to']:
-               raise serializers.ValidationError('the coupon has expired')
+    def validate(self,data):
+        if data['valid_from']>=data['valid_to']:
+            raise serializers.ValidationError({'valid_from': 'Start date must be before end date'})
+        return data
 
 
 

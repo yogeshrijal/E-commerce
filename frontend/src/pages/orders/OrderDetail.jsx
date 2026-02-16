@@ -156,7 +156,7 @@ const OrderDetail = () => {
                             </div>
                         </div>
 
-                        {}
+                        { }
                         {['pending', 'processing'].includes(order.status) && (
                             <div className="order-actions">
                                 <button
@@ -233,7 +233,7 @@ const OrderDetail = () => {
                             <div className="summary-row">
                                 <span>Subtotal:</span>
                                 <span>
-                                    {formatPrice(Number(order.total_amount) - Number(order.tax) - Number(order.shipping_cost))}
+                                    {formatPrice(Number(order.total_amount) - Number(order.tax) - Number(order.shipping_cost) + Number(order.discount_amount || 0))}
                                 </span>
                             </div>
                             <div className="summary-row">
@@ -244,6 +244,12 @@ const OrderDetail = () => {
                                 <span>Shipping:</span>
                                 <span>{formatPrice(order.shipping_cost)}</span>
                             </div>
+                            {Number(order.discount_amount) > 0 && (
+                                <div className="summary-row discount" style={{ color: 'green' }}>
+                                    <span>Discount:</span>
+                                    <span>-{formatPrice(order.discount_amount)}</span>
+                                </div>
+                            )}
                             <div className="summary-row total">
                                 <span>Total:</span>
                                 <span>{formatPrice(order.total_amount)}</span>
@@ -253,7 +259,7 @@ const OrderDetail = () => {
                 </div>
             </div>
 
-            {}
+            { }
             {reviewModalOpen && selectedItemForReview && (
                 <div className="modal-overlay">
                     <div className="modal-content">

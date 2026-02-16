@@ -68,8 +68,28 @@ const CouponManagement = () => {
             resetForm();
             fetchCoupons();
         } catch (error) {
-            toast.error(error.response?.data?.message || 'Operation failed');
             console.error(error);
+            const errorData = error.response?.data;
+            let errorMessage = 'Operation failed';
+
+            if (errorData) {
+                if (errorData.message) {
+                    errorMessage = errorData.message;
+                } else if (typeof errorData === 'object') {
+                    // Handle DRF field errors
+                    const firstKey = Object.keys(errorData)[0];
+                    const firstError = errorData[firstKey];
+                    if (Array.isArray(firstError)) {
+                        errorMessage = `${firstKey}: ${firstError[0]}`;
+                    } else if (typeof firstError === 'string') {
+                        errorMessage = `${firstKey}: ${firstError}`;
+                    } else {
+                        errorMessage = JSON.stringify(firstError);
+                    }
+                }
+            }
+
+            toast.error(errorMessage);
         }
     };
 

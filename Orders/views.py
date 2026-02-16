@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework import status 
 from Payments.models import Payment
 from rest_framework.decorators import action
+from django.utils import timezone
 
 
 
@@ -67,7 +68,20 @@ class OrderViewSet(viewsets.ModelViewSet):
                         "discount": discount,
                         "message": "Coupon applied successfully!"
                     })
-                return Response({"valid": False, "message": "Coupon criteria not met."}, status=400)
+                
+               
+                now = timezone.now()
+                message = "Coupon criteria not met."
+                if not coupon.active:
+                    message = "Coupon is not active."
+                elif not (coupon.valid_from <= now <= coupon.valid_to):
+                    message = "Coupon has expired."
+                elif coupon.used_count >= coupon.usage_limit:
+                    message = "Coupon usage limit reached."
+                elif subtotal < coupon.min_purchase_ammount:
+                    message = f"Minimum purchase of {coupon.min_purchase_ammount} required."
+
+                return Response({"valid": False, "message": message}, status=400)
             except Coupon.DoesNotExist:
                 return Response({"valid": False, "message": "Invalid code."}, status=404)
     def restore_stock(self,order):
