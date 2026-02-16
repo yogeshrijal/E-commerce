@@ -11,6 +11,7 @@ class Coupon(models.Model):
        ('fixed','Fixed'),
        ('percentage','Percentage')
     ]
+   users_used=models.ManyToManyField(settings.AUTH_USER_MODEL,blank=True,related_name='used_coupons')
    code=models.CharField(max_length=50,unique=True)
    discount_type=models.CharField(max_length=50,choices=DISCOUNT_CHOICES,default='fixed')
    discount_value=models.DecimalField(max_digits=10,decimal_places=2)
@@ -24,8 +25,13 @@ class Coupon(models.Model):
 
 
 
-   def is_valid(self, amount):
+   def is_valid(self, amount, user=None):
        now = timezone.now()
+
+      
+       if user and self.users_used.filter(id=user.id).exists():
+           return False
+
        return (
            self.active and
            self.valid_from <= now <= self.valid_to and

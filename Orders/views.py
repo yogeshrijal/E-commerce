@@ -56,8 +56,13 @@ class OrderViewSet(viewsets.ModelViewSet):
 
             try:
                 coupon = Coupon.objects.get(code=code)
+                if coupon.users_used.filter(id=self.request.user.id).exists():
+                    return Response({
+                        'valid':False,
+                        'message':'coupon is already used'
+                        
+                    },status=status.HTTP_400_BAD_REQUEST)
                 if coupon.is_valid(subtotal):
-                    # Calculate potential discount
                     if coupon.discount_type == 'fixed':
                         discount = coupon.discount_value
                     else:
@@ -159,6 +164,12 @@ class OrderViewSet(viewsets.ModelViewSet):
             self.restore_stock(instance)
            
             Payment.objects.filter(order=instance).update(status='failed')
+
+            if instance.coupon:
+                instance.coupon.users_used.remove(instance.customer)
+                instance.coupon.used_count-=1
+                instance.coupon.save()
+
              
         return response
 

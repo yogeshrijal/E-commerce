@@ -22,12 +22,6 @@ class User(AbstractUser):
         return f"{self.username} ({self.role})"
     
 
-        if self.role == 'admin':
-            from Orders.models import Coupon
-            content_type = ContentType.objects.get_for_model(Coupon)
-            permissions = Permission.objects.filter(content_type=content_type)
-            self.user_permissions.add(*permissions)
-    
 
 class EmailVerificationToken(models.Model):
     user=models.ForeignKey(User, on_delete=models.CASCADE)

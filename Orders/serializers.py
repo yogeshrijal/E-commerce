@@ -35,6 +35,9 @@ class OrderSerializer(ModelSerializer):
     def validate(self, data):
         coupon_code=data.get('coupon_code')
         item_data=data.get('order_item',[])
+        user=self.context['request'].user
+
+
 
 
         total_sum=Decimal(0.00)
@@ -49,9 +52,7 @@ class OrderSerializer(ModelSerializer):
             try:
                 coupon=Coupon.objects.get(code=coupon_code)
 
-               
-
-                if not coupon.is_valid(total_sum):
+                if not coupon.is_valid(total_sum,user=user):
                      now=timezone.now()
                      if not coupon.active:
                          raise serializers.ValidationError('coupon is not active')
@@ -67,9 +68,8 @@ class OrderSerializer(ModelSerializer):
                      else:
                          raise serializers.ValidationError('invalid coupon')
                      
-
-                     data['coupon_obj']=coupon
-                     data['total_sum']=total_sum
+                data['coupon_obj']=coupon
+                data['total_sum']=total_sum
 
 
             except Coupon.DoesNotExist:
@@ -119,6 +119,7 @@ class OrderSerializer(ModelSerializer):
         
         coupon_obj=validated_data.pop('coupon_obj', None)
         coupon_code = validated_data.pop('coupon_code', None)
+        validated_data.pop('total_sum', None)
         
       
         if not coupon_obj and coupon_code:
@@ -170,6 +171,7 @@ class OrderSerializer(ModelSerializer):
                      order.coupon=coupon_obj
                      order.discount_amount=discount
                      coupon_obj.used_count+=1
+                     coupon_obj.users_used.add(order.customer)
                      coupon_obj.save()
                 else:
                     discount = Decimal('0.00')

@@ -380,8 +380,11 @@ const Checkout = () => {
 
             const message = error.response?.data?.order_item?.[0] ||
                 JSON.stringify(error.response?.data?.order_item) ||
+                error.response?.data?.coupon_code?.[0] ||
+                error.response?.data?.non_field_errors?.[0] ||
                 error.response?.data?.detail ||
                 error.response?.data?.error ||
+                (typeof error.response?.data === 'string' ? error.response?.data : '') ||
                 error.message ||
                 'Failed to place order';
             toast.error(message);
