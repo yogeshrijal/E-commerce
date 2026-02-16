@@ -13,7 +13,7 @@ class User(AbstractUser):
          ('admin','ADMIN'),
     ]
     role=models.CharField(max_length=20,choices=ROLE_CHOCIES,default='customer')
-    contact=models.PositiveIntegerField(null=True,blank=True)
+    contact=models.BigIntegerField(null=True,blank=True)
     address=models.TextField(blank=True, default='')
     profile_picture=models.ImageField( upload_to='User/', null=True,blank=True)
 

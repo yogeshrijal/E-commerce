@@ -1,0 +1,326 @@
+[
+{
+    "model": "Products.category",
+    "pk": 1,
+    "fields": {
+        "name": "Electronics",
+        "parent": null,
+        "created_by": null
+    }
+},
+{
+    "model": "Products.category",
+    "pk": 2,
+    "fields": {
+        "name": "Furniture",
+        "parent": null,
+        "created_by": 4
+    }
+},
+{
+    "model": "Products.category",
+    "pk": 3,
+    "fields": {
+        "name": "clothes",
+        "parent": null,
+        "created_by": 4
+    }
+},
+{
+    "model": "Products.category",
+    "pk": 4,
+    "fields": {
+        "name": "watches",
+        "parent": null,
+        "created_by": 4
+    }
+},
+{
+    "model": "Products.category",
+    "pk": 5,
+    "fields": {
+        "name": "sports",
+        "parent": null,
+        "created_by": 4
+    }
+},
+{
+    "model": "Products.category",
+    "pk": 6,
+    "fields": {
+        "name": "Laptop",
+        "parent": 1,
+        "created_by": 4
+    }
+},
+{
+    "model": "Products.category",
+    "pk": 7,
+    "fields": {
+        "name": "earbuds",
+        "parent": 1,
+        "created_by": 4
+    }
+},
+{
+    "model": "Products.product",
+    "pk": 1,
+    "fields": {
+        "category": 2,
+        "created_by": null,
+        "name": "Wooden Table",
+        "description": "this is very good materials woow nice",
+        "base_price": "15000.00",
+        "stock": 10,
+        "image": "",
+        "is_active": true,
+        "created_at": "2026-01-19T07:25:50.942Z"
+    }
+},
+{
+    "model": "Products.product",
+    "pk": 2,
+    "fields": {
+        "category": 2,
+        "created_by": null,
+        "name": "Wooden Table",
+        "description": "this is very good materials woow nice",
+        "base_price": "15000.00",
+        "stock": 10,
+        "image": "",
+        "is_active": true,
+        "created_at": "2026-01-19T07:30:37.909Z"
+    }
+},
+{
+    "model": "Products.product",
+    "pk": 3,
+    "fields": {
+        "category": 2,
+        "created_by": null,
+        "name": "Wooden Table",
+        "description": "this is very good materials woow nice",
+        "base_price": "15000.00",
+        "stock": 10,
+        "image": "",
+        "is_active": true,
+        "created_at": "2026-01-19T07:31:20.821Z"
+    }
+},
+{
+    "model": "Products.product",
+    "pk": 4,
+    "fields": {
+        "category": 2,
+        "created_by": null,
+        "name": "Wooden Table",
+        "description": "this is very good materials woow nice",
+        "base_price": "15000.00",
+        "stock": 10,
+        "image": "",
+        "is_active": true,
+        "created_at": "2026-01-19T07:31:23.545Z"
+    }
+},
+{
+    "model": "Products.product",
+    "pk": 9,
+    "fields": {
+        "category": 6,
+        "created_by": 8,
+        "name": "MacBook Pro",
+        "description": "Apple MacBook Pro with M2 chip",
+        "base_price": "1200.00",
+        "stock": 27,
+        "image": "Products/istockphoto-1478610778-612x612_GPsMaKP.jpg",
+        "is_active": true,
+        "created_at": "2026-01-20T07:37:25.269Z"
+    }
+},
+{
+    "model": "Products.product",
+    "pk": 11,
+    "fields": {
+        "category": 7,
+        "created_by": 8,
+        "name": "airdopes123",
+        "description": "very good earphone for you ears",
+        "base_price": "1500.00",
+        "stock": 20,
+        "image": "Products/roger-cai-HuTUDQqr88c-unsplash_1.jpg",
+        "is_active": true,
+        "created_at": "2026-01-21T18:04:08.815Z"
+    }
+},
+{
+    "model": "Products.product",
+    "pk": 12,
+    "fields": {
+        "category": 7,
+        "created_by": 8,
+        "name": "earphone",
+        "description": "sffdgfhertwqeADSFFGNFHY",
+        "base_price": "1500.00",
+        "stock": 7,
+        "image": "Products/roger-cai-HuTUDQqr88c-unsplash_1_sp7K3jO.jpg",
+        "is_active": true,
+        "created_at": "2026-01-23T11:00:12.777Z"
+    }
+},
+{
+    "model": "Products.product",
+    "pk": 14,
+    "fields": {
+        "category": 1,
+        "created_by": 14,
+        "name": "iphone",
+        "description": "nice phone",
+        "base_price": "10000.00",
+        "stock": 48,
+        "image": "Products/Apple_iPhone_14_Pro_Max_eLOROMN.jpeg",
+        "is_active": true,
+        "created_at": "2026-02-01T10:55:58.705Z"
+    }
+},
+{
+    "model": "Products.product",
+    "pk": 15,
+    "fields": {
+        "category": 6,
+        "created_by": 8,
+        "name": "lapmac",
+        "description": "sadfghmj,hjgkjfhtdrgsefadzcxvcfdht",
+        "base_price": "100000.00",
+        "stock": 50,
+        "image": "Products/istockphoto-1478610778-612x612_rfJfoP0.jpg",
+        "is_active": true,
+        "created_at": "2026-02-12T05:06:42.965Z"
+    }
+},
+{
+    "model": "Products.product",
+    "pk": 16,
+    "fields": {
+        "category": 7,
+        "created_by": 8,
+        "name": "earbuds123",
+        "description": "fsafasffdsa",
+        "base_price": "10000.00",
+        "stock": 45,
+        "image": "Products/roger-cai-HuTUDQqr88c-unsplash_1_AzVJKBe.jpg",
+        "is_active": true,
+        "created_at": "2026-02-12T05:19:26.199Z"
+    }
+},
+{
+    "model": "Products.productspecs",
+    "pk": 32,
+    "fields": {
+        "product": 9,
+        "attribute": "Brand",
+        "value": "Apple"
+    }
+},
+{
+    "model": "Products.productspecs",
+    "pk": 33,
+    "fields": {
+        "product": 9,
+        "attribute": "Processor",
+        "value": "M2"
+    }
+},
+{
+    "model": "Products.productspecs",
+    "pk": 34,
+    "fields": {
+        "product": 9,
+        "attribute": "Display",
+        "value": "15-inch Retina"
+    }
+},
+{
+    "model": "Products.productsku",
+    "pk": 4,
+    "fields": {
+        "product": 9,
+        "attribute": "",
+        "sku_code": "MBP-SILVER-8GB",
+        "price": "1200.00",
+        "stock": 0,
+        "image": ""
+    }
+},
+{
+    "model": "Products.productsku",
+    "pk": 5,
+    "fields": {
+        "product": 9,
+        "attribute": "",
+        "sku_code": "MBP-GRAY-16GB",
+        "price": "1500.00",
+        "stock": 15,
+        "image": ""
+    }
+},
+{
+    "model": "Products.productsku",
+    "pk": 6,
+    "fields": {
+        "product": 11,
+        "attribute": "",
+        "sku_code": "bas-11",
+        "price": "1500.00",
+        "stock": 13,
+        "image": ""
+    }
+},
+{
+    "model": "Products.productsku",
+    "pk": 7,
+    "fields": {
+        "product": 14,
+        "attribute": "",
+        "sku_code": "iphone-123",
+        "price": "10000.00",
+        "stock": 15,
+        "image": ""
+    }
+},
+{
+    "model": "Products.skuatrribute",
+    "pk": 5,
+    "fields": {
+        "sku": 4,
+        "attribute": "Color",
+        "value": "Silver"
+    }
+},
+{
+    "model": "Products.skuatrribute",
+    "pk": 6,
+    "fields": {
+        "sku": 4,
+        "attribute": "RAM",
+        "value": "8GB"
+    }
+},
+{
+    "model": "Products.skuatrribute",
+    "pk": 7,
+    "fields": {
+        "sku": 5,
+        "attribute": "Color",
+        "value": "Space Gray"
+    }
+},
+{
+    "model": "Products.skuatrribute",
+    "pk": 8,
+    "fields": {
+        "sku": 5,
+        "attribute": "RAM",
+        "value": "16GB"
+    }
+}
+]

@@ -1,0 +1,28 @@
+[
+{
+    "model": "Reviews.review",
+    "pk": 1,
+    "fields": {
+        "product": 9,
+        "order": 2,
+        "user": 9,
+        "sku": 4,
+        "rating": 5,
+        "comment": "sdafdghf",
+        "created_at": "2026-01-27T09:44:34.905Z"
+    }
+},
+{
+    "model": "Reviews.review",
+    "pk": 5,
+    "fields": {
+        "product": 11,
+        "order": 25,
+        "user": 9,
+        "sku": 6,
+        "rating": 5,
+        "comment": "scadv vdwv",
+        "created_at": "2026-01-27T11:31:17.410Z"
+    }
+}
+]

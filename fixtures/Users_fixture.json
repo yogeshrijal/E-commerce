@@ -1,0 +1,566 @@
+[
+{
+    "model": "Users.user",
+    "pk": 3,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$3bdJdrM9bt6Ui4kF0WwewS$zSbAdTcJ7cL+EiQ8Ou2qCfuLTuw4tgdOHqUaj9YuG8Y=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "yogesh",
+        "first_name": "",
+        "last_name": "",
+        "email": "yogeshrijal41@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-01-18T07:59:03.511Z",
+        "role": "seller",
+        "contact": 9861607828,
+        "address": "",
+        "profile_picture": "",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "Users.user",
+    "pk": 4,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$t11AxzXq1q5TeRP0Jk66Sd$gQdByvH+/lPPic9wgKz9ssbhdTgC3fSfkbR672SVPAU=",
+        "last_login": "2026-02-05T05:47:43.536Z",
+        "is_superuser": true,
+        "username": "admin",
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "is_staff": true,
+        "is_active": true,
+        "date_joined": "2026-01-18T08:03:38Z",
+        "role": "admin",
+        "contact": null,
+        "address": "gothatar",
+        "profile_picture": "",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "Users.user",
+    "pk": 5,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$gFDcYtCa1NdsbhevWHaGLy$Zp3s+WACBNoFZ0s4KrGROnPzx+2/JSWB2Z5zLOgsO3E=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "ram",
+        "first_name": "",
+        "last_name": "",
+        "email": "ram@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-01-18T08:40:43.562Z",
+        "role": "admin",
+        "contact": 9861607828,
+        "address": "",
+        "profile_picture": "",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "Users.user",
+    "pk": 6,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$AtwnDiHvna4uVaja2fO9Kx$IkvIKplRuPXrUawotB7UQnQMM2JK01qz4pJ9/2Lka24=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "ram1",
+        "first_name": "",
+        "last_name": "",
+        "email": "sadwdwewq@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-01-18T08:49:54.283Z",
+        "role": "admin",
+        "contact": 934534523423434,
+        "address": "",
+        "profile_picture": "",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "Users.user",
+    "pk": 7,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$613IhV7ULmH0876K5P84oD$/T/8utL+K5cLTrKk+rWBidwOMAmjrKZXvDoqM/IzUJA=",
+        "last_login": "2026-01-19T05:41:11.931Z",
+        "is_superuser": false,
+        "username": "hari",
+        "first_name": "",
+        "last_name": "",
+        "email": "john@example.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-01-18T17:44:46Z",
+        "role": "customer",
+        "contact": 9876543210,
+        "address": "gothatar",
+        "profile_picture": "",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "Users.user",
+    "pk": 8,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$lwI5ibw4H1WUXAMWRDMHiV$q4mp7ZGX+GUwUPbRB4NJg5tjvnbuKYrMYsCFix6ribI=",
+        "last_login": "2026-01-19T17:40:15.930Z",
+        "is_superuser": false,
+        "username": "sita",
+        "first_name": "",
+        "last_name": "",
+        "email": "john1@example.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-01-19T04:38:20.353Z",
+        "role": "seller",
+        "contact": 9876543220,
+        "address": "gothatar",
+        "profile_picture": "User/Screenshot_2026-01-16_at_15.41.44.png",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "Users.user",
+    "pk": 9,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$vqQtyD3sQxi7plI172C6w8$MBFCUE0K2roisUjfWzENekGK+g74hxlMplxp5JtD4wY=",
+        "last_login": "2026-02-05T05:36:30.593Z",
+        "is_superuser": false,
+        "username": "harry",
+        "first_name": "",
+        "last_name": "",
+        "email": "harry@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-01-20T08:43:27Z",
+        "role": "customer",
+        "contact": 98332545244234,
+        "address": "",
+        "profile_picture": "",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "Users.user",
+    "pk": 10,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$TOLQ3IZPBYmQRQoM8EWJF8$bOgN9kx2D7YWuszyqMSTjS2Bd8fhZhs99Y2/Dddvrrk=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "yogesh10",
+        "first_name": "",
+        "last_name": "",
+        "email": "YOGESHRIJAL41@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-01-21T18:05:16.360Z",
+        "role": "customer",
+        "contact": 9861607828,
+        "address": "",
+        "profile_picture": "",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "Users.user",
+    "pk": 11,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$OOf9nKjt5idhJ5p8tjlhPG$t7rhKZi+HzKhtwuMHEsjlyUWGenKc3ThlDIp8+OnGGM=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "raman",
+        "first_name": "",
+        "last_name": "",
+        "email": "raman@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-01-22T04:25:05.671Z",
+        "role": "customer",
+        "contact": 96545345345,
+        "address": "boudha",
+        "profile_picture": "User/495380326_10151907739814971_589058556501112063_n.jpg",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "Users.user",
+    "pk": 12,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$7qmlWCSb6bfWTvs6KVqZ4m$74eg4mgopJcQL9iOJNEZTsBTfztkYEhFdJgaqCihEfo=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "yogesh123",
+        "first_name": "",
+        "last_name": "",
+        "email": "yogeshrijal42@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-02-01T08:30:14Z",
+        "role": "customer",
+        "contact": 9861607828,
+        "address": "",
+        "profile_picture": "",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "Users.user",
+    "pk": 13,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$OIx9mBbUqEUjcOh5JSoO7p$fKMB/VvlS7DzNolzN/SSjAmGlaIGtQRIfmN+Ym0SM2Q=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "testbuyer123",
+        "first_name": "",
+        "last_name": "",
+        "email": "testbuyer123@example.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-02-01T09:37:38.571Z",
+        "role": "customer",
+        "contact": 9812345678,
+        "address": "",
+        "profile_picture": "",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "Users.user",
+    "pk": 14,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$sXGHOHK3WgRu0T7Tp4u7Cq$LIUSd4pKp1lUu4im9oVKLtTf7sDks06s6H2VT+FncT8=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "testseller",
+        "first_name": "",
+        "last_name": "",
+        "email": "test@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-02-01T10:53:37.529Z",
+        "role": "seller",
+        "contact": 9861607828,
+        "address": "",
+        "profile_picture": "",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "Users.user",
+    "pk": 15,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$xd4ypzuoMW6yrlqSC08JQr$TD0IyBz2FP0rYtTPPKXyqAMTeOcOMgp3UgLOAVU7mzc=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "yogesh23",
+        "first_name": "",
+        "last_name": "",
+        "email": "yogeshrijal41@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-02-11T07:29:22.559Z",
+        "role": "customer",
+        "contact": 9861607828,
+        "address": "",
+        "profile_picture": "",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "Users.user",
+    "pk": 16,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$V3QIirFVUdeOaRo6rw2K2v$EPJn1bNhjPRTPX/TqVTJrNPbCI1llHjgCuZ3yj7QQqI=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "testuser123",
+        "first_name": "",
+        "last_name": "",
+        "email": "test123@test.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-02-11T07:32:09.758Z",
+        "role": "customer",
+        "contact": 9812345678,
+        "address": "",
+        "profile_picture": "",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "Users.user",
+    "pk": 17,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$nk4X6FDGvI6SulpTNGcieb$WRBEDdzRQa6dVwH0sqL4m/TJsSj1r0rnWBGwp+b4Ugw=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "yogesh32",
+        "first_name": "",
+        "last_name": "",
+        "email": "yogeshrijal41@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-02-11T07:43:06.714Z",
+        "role": "customer",
+        "contact": 9861607828,
+        "address": "",
+        "profile_picture": "",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "Users.user",
+    "pk": 18,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$Mww13LNfZR5CQ9PsOgQzqX$zCjU2WFzhSdUIs91apiricdGIUoIj3k1aKb04P8ykac=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "yogesh1010",
+        "first_name": "",
+        "last_name": "",
+        "email": "yogeshrijal41@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-02-11T07:45:17.372Z",
+        "role": "customer",
+        "contact": 9861607828,
+        "address": "",
+        "profile_picture": "",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "Users.user",
+    "pk": 19,
+    "fields": {
+        "password": "pbkdf2_sha256$1200000$RlUswYhZcikQ2Epu416Fe0$NVOwMrz0cykuWZHFwF8TRzMpmnl96GRxIT0dAsR6RJI=",
+        "last_login": null,
+        "is_superuser": false,
+        "username": "yogesh32321",
+        "first_name": "",
+        "last_name": "",
+        "email": "yogeshrijal41@gmail.com",
+        "is_staff": false,
+        "is_active": true,
+        "date_joined": "2026-02-11T07:49:59.810Z",
+        "role": "customer",
+        "contact": 9861431224,
+        "address": "",
+        "profile_picture": "",
+        "groups": [],
+        "user_permissions": []
+    }
+},
+{
+    "model": "Users.emailverificationtoken",
+    "pk": 1,
+    "fields": {
+        "user": 15,
+        "token": "fddef286-ebc6-4b5f-9983-ae181688f79a",
+        "is_used": false,
+        "created_at": "2026-02-11T07:29:22.688Z"
+    }
+},
+{
+    "model": "Users.emailverificationtoken",
+    "pk": 2,
+    "fields": {
+        "user": 16,
+        "token": "bec8cb25-ced7-427f-9761-14cdb618a439",
+        "is_used": false,
+        "created_at": "2026-02-11T07:32:09.880Z"
+    }
+},
+{
+    "model": "Users.passwordresettoken",
+    "pk": 1,
+    "fields": {
+        "user": 3,
+        "token": "5d970532-aa39-4e50-bbbc-61552ccf3390",
+        "created_at": "2026-02-01T05:29:25.627Z",
+        "is_used": false
+    }
+},
+{
+    "model": "Users.passwordresettoken",
+    "pk": 2,
+    "fields": {
+        "user": 3,
+        "token": "900ab893-fbef-4aca-a1e2-3c373f154061",
+        "created_at": "2026-02-01T05:33:51.341Z",
+        "is_used": false
+    }
+},
+{
+    "model": "Users.passwordresettoken",
+    "pk": 3,
+    "fields": {
+        "user": 3,
+        "token": "db6e6372-18f0-4ff2-bd96-582f7ad54ed8",
+        "created_at": "2026-02-01T07:04:31.221Z",
+        "is_used": false
+    }
+},
+{
+    "model": "Users.passwordresettoken",
+    "pk": 4,
+    "fields": {
+        "user": 3,
+        "token": "dc36576d-9cde-45d7-a8dc-5469688b6767",
+        "created_at": "2026-02-01T07:05:46.293Z",
+        "is_used": true
+    }
+},
+{
+    "model": "Users.passwordresettoken",
+    "pk": 5,
+    "fields": {
+        "user": 3,
+        "token": "a260ccd6-0dcb-4516-910a-7d5e65cf1e86",
+        "created_at": "2026-02-01T07:09:33.151Z",
+        "is_used": false
+    }
+},
+{
+    "model": "Users.passwordresettoken",
+    "pk": 6,
+    "fields": {
+        "user": 3,
+        "token": "ce62c7e0-df66-4909-bf7f-9e71769a6a4a",
+        "created_at": "2026-02-01T07:19:51.396Z",
+        "is_used": false
+    }
+},
+{
+    "model": "Users.passwordresettoken",
+    "pk": 7,
+    "fields": {
+        "user": 3,
+        "token": "738335ce-e219-4459-a441-b78f78edc695",
+        "created_at": "2026-02-01T07:25:14.334Z",
+        "is_used": false
+    }
+},
+{
+    "model": "Users.passwordresettoken",
+    "pk": 8,
+    "fields": {
+        "user": 3,
+        "token": "d866b68f-65ce-4224-b5f6-f01d16f4e94e",
+        "created_at": "2026-02-01T07:25:15.492Z",
+        "is_used": false
+    }
+},
+{
+    "model": "Users.passwordresettoken",
+    "pk": 9,
+    "fields": {
+        "user": 3,
+        "token": "fd6b5729-9499-48c6-9692-a20843a57e71",
+        "created_at": "2026-02-01T07:28:07.205Z",
+        "is_used": false
+    }
+},
+{
+    "model": "Users.passwordresettoken",
+    "pk": 10,
+    "fields": {
+        "user": 3,
+        "token": "ab5ae744-784b-4e9f-bf38-265ada772a48",
+        "created_at": "2026-02-01T07:28:09.142Z",
+        "is_used": false
+    }
+},
+{
+    "model": "Users.passwordresettoken",
+    "pk": 11,
+    "fields": {
+        "user": 3,
+        "token": "2bf46a48-a7dc-40b6-930d-fb8e049205da",
+        "created_at": "2026-02-01T07:28:10.341Z",
+        "is_used": false
+    }
+},
+{
+    "model": "Users.passwordresettoken",
+    "pk": 12,
+    "fields": {
+        "user": 3,
+        "token": "0f6051fb-61e2-4fad-876b-fb50185d7ec7",
+        "created_at": "2026-02-01T07:49:56.745Z",
+        "is_used": true
+    }
+},
+{
+    "model": "Users.passwordresettoken",
+    "pk": 13,
+    "fields": {
+        "user": 3,
+        "token": "c161b181-7d33-405c-9449-11fa1fcff801",
+        "created_at": "2026-02-01T08:05:44.650Z",
+        "is_used": false
+    }
+},
+{
+    "model": "Users.passwordresettoken",
+    "pk": 14,
+    "fields": {
+        "user": 3,
+        "token": "79829756-922f-44b1-b733-e9d594751b82",
+        "created_at": "2026-02-01T08:05:46.608Z",
+        "is_used": true
+    }
+},
+{
+    "model": "Users.passwordresettoken",
+    "pk": 15,
+    "fields": {
+        "user": 12,
+        "token": "2c13aeaa-452a-4864-95c4-3cca4509691f",
+        "created_at": "2026-02-01T08:32:14.737Z",
+        "is_used": false
+    }
+},
+{
+    "model": "Users.passwordresettoken",
+    "pk": 16,
+    "fields": {
+        "user": 12,
+        "token": "67fe1ff3-6987-4756-9d41-a942014efcfd",
+        "created_at": "2026-02-01T08:35:29.607Z",
+        "is_used": true
+    }
+},
+{
+    "model": "Users.passwordresettoken",
+    "pk": 17,
+    "fields": {
+        "user": 12,
+        "token": "e6bd4e96-77c3-4e9c-b666-689aeb52e8c8",
+        "created_at": "2026-02-01T08:38:18.805Z",
+        "is_used": false
+    }
+}
+]

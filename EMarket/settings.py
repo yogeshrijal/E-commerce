@@ -79,12 +79,27 @@ WSGI_APPLICATION = 'EMarket.wsgi.application'
 
 
 
+
+''''
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+'''
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'ecommerce',   
+        'USER': 'yogeshrijal',  
+        'PASSWORD': '',         
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 
 
 

@@ -1,0 +1,26 @@
+[
+{
+    "model": "shipping.shippingzone",
+    "pk": 1,
+    "fields": {
+        "country_name": "united states",
+        "rate": "100.00"
+    }
+},
+{
+    "model": "shipping.shippingzone",
+    "pk": 2,
+    "fields": {
+        "country_name": "Australia",
+        "rate": "70.00"
+    }
+},
+{
+    "model": "shipping.shippingzone",
+    "pk": 3,
+    "fields": {
+        "country_name": "india",
+        "rate": "50.00"
+    }
+}
+]
